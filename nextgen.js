@@ -582,14 +582,29 @@
   const LIKERT_LABEL = {};
   LIKERT_SCALE.forEach(b => { LIKERT_LABEL[b.key] = b.label; });
 
+  // Form exports carry authoring artifacts in the header cell — the answer-type
+  // hint ("✎ [Open text]"), hard newlines, doubled spaces. Strip them so the chart
+  // label reads as the question the respondent actually saw.
+  function cleanLabel(raw) {
+    return String(raw == null ? '' : raw)
+      .replace(/[✎✏✒]?\s*\[(open[- ]?(text|ended)|free[- ]?text|text)\]/gi, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+  // Headers a spreadsheet invented rather than a question anyone was asked.
+  const JUNK_HEADER_RE = /^(column\s*\d*|unnamed[\s:_]*\d*|field\s*\d*|_+)$/i;
+
   function detectColumns(header, rows) {
     return header.map((h, idx) => {
       const key = 'c' + idx;
-      const label = String(h || '').trim() || `Column ${idx + 1}`;
+      const label = cleanLabel(h) || `Column ${idx + 1}`;
       const vals = rows.map(r => String(r[idx] == null ? '' : r[idx]).trim()).filter(v => v);
       const col = { key, label, type: 'category', pillarId: '' };
       if (!vals.length) { col.type = 'meta'; return col; }
       if (META_RE.test(label)) { col.type = 'meta'; return col; }
+      // A junk header means there's no question behind the column — keep it out of
+      // the charts rather than plotting a nameless statement. Retypable in the UI.
+      if (JUNK_HEADER_RE.test(label)) { col.type = 'meta'; col.junkHeader = true; return col; }
 
       const likertHits = vals.filter(v => likertBucket(v)).length;
       if (likertHits / vals.length >= 0.6) { col.type = 'likert'; return col; }
