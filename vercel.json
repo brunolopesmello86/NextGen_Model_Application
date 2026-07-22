@@ -8,10 +8,15 @@
     {
       "src": "index.html",
       "use": "@vercel/static"
+    },
+    {
+      "src": "nextgen.js",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/index.js" },
+    { "src": "/nextgen.js", "dest": "/nextgen.js" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
