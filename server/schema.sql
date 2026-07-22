@@ -35,6 +35,25 @@ CREATE TABLE IF NOT EXISTS journeys (
 CREATE INDEX IF NOT EXISTS idx_journeys_client_id ON journeys(client_id);
 CREATE INDEX IF NOT EXISTS idx_journeys_updated_at ON journeys(updated_at DESC);
 
+-- ── Uploaded response datasets (survey / interview CSV exports) ──
+-- Kept in their own table rather than a journeys JSONB column: response sets run to
+-- thousands of cells and would blow the single-PUT journey save.
+CREATE TABLE IF NOT EXISTS datasets (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    journey_id  UUID NOT NULL REFERENCES journeys(id) ON DELETE CASCADE,
+    channel     TEXT NOT NULL DEFAULT 'surveys',  -- surveys | interviews
+    name        TEXT NOT NULL,
+    filename    TEXT,
+    columns     JSONB NOT NULL DEFAULT '[]',  -- [{key,label,type,pillarId}] type: meta|scale|likert|text|category
+    rows        JSONB NOT NULL DEFAULT '[]',  -- [{colKey: value}]
+    row_count   INTEGER NOT NULL DEFAULT 0,
+    analysis    JSONB NOT NULL DEFAULT '{}',  -- {themes:[...], generated_at, model}
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_datasets_journey_id ON datasets(journey_id);
+
 -- ── Migrations for existing databases (idempotent) ──
 ALTER TABLE journeys ADD COLUMN IF NOT EXISTS password_hash     TEXT;
 ALTER TABLE journeys ADD COLUMN IF NOT EXISTS status            TEXT NOT NULL DEFAULT 'as_is';

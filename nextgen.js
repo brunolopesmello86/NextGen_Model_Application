@@ -16,25 +16,28 @@
     { key: 'data',          num: '2', name: 'Data Collection', phase: 'Phase 1 · AS-IS',
       crumb: 'Phase 1 · AS-IS', title: 'Data Collection',
       sub: 'Gather signal from four channels — surveys, Gemba observations, 1:1 interviews and leadership interviews.' },
-    { key: 'asis_map',      num: '3', name: 'AS-IS Mapping', phase: 'Phase 1 · AS-IS',
+    { key: 'analytics',     num: '3', name: 'Response Analytics', phase: 'Phase 1 · AS-IS',
+      crumb: 'Phase 1 · AS-IS', title: 'Response Analytics',
+      sub: 'Analyse uploaded survey and interview responses — scores, agreement patterns, and the themes running through the free-text answers.' },
+    { key: 'asis_map',      num: '4', name: 'AS-IS Mapping', phase: 'Phase 1 · AS-IS',
       crumb: 'Phase 1 · AS-IS', title: 'AS-IS Mapping',
       sub: 'Turn collected data into findings mapped to pillars and sub-areas — the current-state picture.' },
-    { key: 'asis_report',   num: '4', name: 'AS-IS Reporting', phase: 'Phase 1 · AS-IS',
+    { key: 'asis_report',   num: '5', name: 'AS-IS Reporting', phase: 'Phase 1 · AS-IS',
       crumb: 'Phase 1 · AS-IS', title: 'AS-IS Reporting',
       sub: 'Synthesize the AS-IS mapping into an executive report, pillar by pillar.' },
-    { key: 'tobe_sessions', num: '5', name: 'TO-BE Design Sessions', phase: 'Phase 2 · TO-BE',
+    { key: 'tobe_sessions', num: '6', name: 'TO-BE Design Sessions', phase: 'Phase 2 · TO-BE',
       crumb: 'Phase 2 · TO-BE', title: 'TO-BE Design Sessions (Context-Driven Design)',
       sub: 'Co-design the target state with the client through Context-Driven Design working sessions.' },
-    { key: 'champions',     num: '6', name: 'Champions', phase: 'Phase 2 · TO-BE',
+    { key: 'champions',     num: '7', name: 'Champions', phase: 'Phase 2 · TO-BE',
       crumb: 'Phase 2 · TO-BE', title: 'Champions — Early Adopters',
       sub: 'Identify early adopters within the client and grow them into champions who drive adoption.' },
-    { key: 'deliverables',  num: '7', name: 'TO-BE Deliverables', phase: 'Phase 2 · TO-BE',
+    { key: 'deliverables',  num: '8', name: 'TO-BE Deliverables', phase: 'Phase 2 · TO-BE',
       crumb: 'Phase 2 · TO-BE', title: 'TO-BE Design Deliverables',
       sub: 'The artifacts produced by the design work — process maps, playbooks, guides and more.' },
-    { key: 'proposal',      num: '8', name: 'TO-BE Final Proposal', phase: 'Phase 2 · TO-BE',
+    { key: 'proposal',      num: '9', name: 'TO-BE Final Proposal', phase: 'Phase 2 · TO-BE',
       crumb: 'Phase 2 · TO-BE', title: 'TO-BE Design Final Proposal',
       sub: 'The consolidated target-state proposal presented to the client.' },
-    { key: 'roadmap',       num: '9', name: 'Transformation Roadmap', phase: 'Phase 3 · Roadmap',
+    { key: 'roadmap',       num: '10', name: 'Transformation Roadmap', phase: 'Phase 3 · Roadmap',
       crumb: 'Phase 3 · Roadmap', title: 'Transformation Roadmap',
       sub: 'The strategic initiatives — sequenced across horizons — that drive the organization to the TO-BE state.' }
   ];
@@ -64,6 +67,7 @@
     switch (key) {
       case 'pillars': return (j.pillars || []).some(p => (p.maturity || 0) > 0);
       case 'data': { const d = j.data_collection || {}; return ['surveys','gemba','interviews','leadership'].some(k => (d[k] || []).length); }
+      case 'analytics': return dsList.length > 0;
       case 'asis_map': return (j.asis_findings || []).length > 0;
       case 'asis_report': return !!(j.asis_report && (j.asis_report.executive_summary || Object.keys(j.asis_report.byPillar || {}).length));
       case 'tobe_sessions': return (j.tobe_sessions || []).length > 0;
@@ -121,7 +125,7 @@
     const s = SECTIONS.find(x => x.key === current); if (!s) { el.innerHTML = ''; return; }
     const done = !!(J().progress || {})[s.key + '_done'];
     const head = `<div class="sec-head">
-      <div class="sec-crumb">${esc(s.crumb)} · Step ${s.num} of 9</div>
+      <div class="sec-crumb">${esc(s.crumb)} · Step ${s.num} of 10</div>
       <div class="sec-title">${esc(s.title)}</div>
       <div class="sec-sub">${esc(s.sub)}</div>
       <div class="sec-actions">
@@ -278,9 +282,52 @@
       list = items.map(it => dataItem(it, esc(it.role||''))).join('');
     }
     const badge = DATA_TABS.find(t=>t.k===dataTab).badge;
+    const canUpload = dataTab === 'surveys' || dataTab === 'interviews';
+    const upload = canUpload ? `<div class="panel">
+      <div class="panel-title">📄 Upload responses (CSV)<span class="spacer"></span>
+        <span class="item-meta">Export your Forms/Excel results as CSV</span></div>
+      ${dsPending ? pendingUploadHTML() : `
+        <div class="drop-zone" id="dropZone"
+             onclick="document.getElementById('csvInput').click()"
+             ondragover="event.preventDefault();this.classList.add('over')"
+             ondragleave="this.classList.remove('over')"
+             ondrop="NG.onDrop(event, this)">
+          <div class="dz-icon">⬆</div>
+          <div class="dz-main">Drop a CSV here, or click to choose a file</div>
+          <div class="dz-sub">Question columns are detected automatically — scales, agreement scales and free text</div>
+        </div>
+        <input type="file" id="csvInput" accept=".csv,text/csv" style="display:none" onchange="NG.onCsvPicked(event)">`}
+    </div>` : '';
     return `<div class="panel"><div class="panel-title">Data channels</div><div style="display:flex;gap:8px;flex-wrap:wrap">${tabs}</div></div>
+      ${upload}
       <div class="panel"><div class="panel-title"><span class="badge ${badge}">${DATA_TABS.find(t=>t.k===dataTab).label}</span>Add entry</div>${form}</div>
       ${list || '<div class="empty">No entries in this channel yet.</div>'}`;
+  }
+
+  // Preview + confirm screen shown after a CSV is parsed but before it is saved.
+  function pendingUploadHTML() {
+    const p = dsPending;
+    const counts = {};
+    p.columns.forEach(c => { counts[c.type] = (counts[c.type] || 0) + 1; });
+    return `<div class="rail-phase-label" style="padding:0 0 8px">Detected in “${esc(p.filename)}”</div>
+      <div class="tile-row" style="margin-bottom:14px">
+        <div class="tile"><div class="tile-label">Responses</div><div class="tile-value">${p.rows.length}</div></div>
+        <div class="tile"><div class="tile-label">Numeric / NPS</div><div class="tile-value accent">${counts.scale || 0}</div></div>
+        <div class="tile"><div class="tile-label">Agreement</div><div class="tile-value teal">${counts.likert || 0}</div></div>
+        <div class="tile"><div class="tile-label">Free text</div><div class="tile-value gold">${counts.text || 0}</div></div>
+      </div>
+      <div class="field-row" style="grid-template-columns:1fr auto auto">
+        <input class="inp" id="dsName" value="${esc(p.name)}" placeholder="Dataset name">
+        <button class="btn btn-primary btn-sm" onclick="NG.confirmUpload()">Save dataset</button>
+        <button class="btn btn-sm" onclick="NG.cancelUpload()">Cancel</button>
+      </div>
+      <div style="overflow-x:auto;max-height:260px;overflow-y:auto;margin-top:10px"><table class="map-table">
+        <thead><tr><th>Column</th><th style="width:150px">Detected as</th></tr></thead>
+        <tbody>${p.columns.map(c => `<tr><td class="map-q">${esc(c.label)}</td>
+          <td><select class="sel" onchange="NG.setPendingType('${c.key}', this.value)">
+            ${COL_TYPES.map(t => `<option value="${t.k}" ${c.type === t.k ? 'selected' : ''}>${t.label}</option>`).join('')}
+          </select></td></tr>`).join('')}</tbody>
+      </table></div>`;
   }
   function dataItem(it, meta) {
     const open = expanded.has(it.id);
@@ -468,8 +515,396 @@
     return form + board;
   }
 
+  // ══════════════════════════════════════════
+  // CSV PARSING + COLUMN TYPE DETECTION
+  // ══════════════════════════════════════════
+
+  // Full RFC-4180-ish parser: quoted fields, "" escapes, embedded newlines, CRLF, BOM.
+  function parseCSV(text, delim) {
+    if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+    const out = []; let row = [], field = '', i = 0, inQ = false;
+    while (i < text.length) {
+      const c = text[i];
+      if (inQ) {
+        if (c === '"') {
+          if (text[i + 1] === '"') { field += '"'; i += 2; continue; }
+          inQ = false; i++; continue;
+        }
+        field += c; i++; continue;
+      }
+      if (c === '"') { inQ = true; i++; continue; }
+      if (c === delim) { row.push(field); field = ''; i++; continue; }
+      if (c === '\r') { i++; continue; }
+      if (c === '\n') { row.push(field); out.push(row); row = []; field = ''; i++; continue; }
+      field += c; i++;
+    }
+    if (field !== '' || row.length) { row.push(field); out.push(row); }
+    return out.filter(r => r.some(v => String(v).trim() !== ''));
+  }
+
+  // Exports vary: Forms/Excel use ',', many European locales use ';'.
+  function sniffDelimiter(text) {
+    const line = text.split(/\r?\n/)[0] || '';
+    let best = ',', bestN = -1;
+    [',', ';', '\t'].forEach(d => {
+      let n = 0, inQ = false;
+      for (const ch of line) { if (ch === '"') inQ = !inQ; else if (ch === d && !inQ) n++; }
+      if (n > bestN) { bestN = n; best = d; }
+    });
+    return best;
+  }
+
+  const META_RE = /^(id|start ?time|completion ?time|submit(ted)?( ?time)?|last ?modified( ?time)?|email|name|respondent|timestamp|date)$/i;
+  // Tolerates the "Desagree" spelling that appears in the real NextGen exports.
+  const LIKERT_SCALE = [
+    { key: 'disagree_strong', order: 1, label: 'Disagree',          re: /^(strongly\s+)?d[ei]sagree$/i },
+    { key: 'disagree_weak',   order: 2, label: 'Somewhat Disagree',  re: /^(somewhat|slightly|partially)\s+d[ei]sagree$/i },
+    { key: 'agree_weak',      order: 3, label: 'Somewhat Agree',     re: /^(somewhat|slightly|partially)\s+agree$/i },
+    { key: 'agree_strong',    order: 4, label: 'Agree',              re: /^(strongly\s+|totally\s+)?agree$/i },
+    { key: 'neutral',         order: 0, label: 'Neutral / N-A',      re: /^(neutral|neither.*|no opinion|n\/?a)$/i }
+  ];
+  function likertBucket(v) {
+    const s = String(v == null ? '' : v).trim();
+    if (!s) return null;
+    // weak variants first — "somewhat disagree" must not fall into the strong bucket
+    for (const b of [LIKERT_SCALE[1], LIKERT_SCALE[2], LIKERT_SCALE[0], LIKERT_SCALE[3], LIKERT_SCALE[4]]) {
+      if (b.re.test(s)) return b;
+    }
+    return null;
+  }
+  const LIKERT_ORDER = ['disagree_strong', 'disagree_weak', 'agree_weak', 'agree_strong', 'neutral'];
+  const LIKERT_COLOR = {
+    disagree_strong: 'var(--lk-1)', disagree_weak: 'var(--lk-2)',
+    agree_weak: 'var(--lk-3)', agree_strong: 'var(--lk-4)', neutral: 'var(--lk-na)'
+  };
+  // Light fills need dark ink to stay legible.
+  const LIKERT_DARK_INK = { disagree_weak: true, agree_weak: true };
+  const LIKERT_LABEL = {};
+  LIKERT_SCALE.forEach(b => { LIKERT_LABEL[b.key] = b.label; });
+
+  function detectColumns(header, rows) {
+    return header.map((h, idx) => {
+      const key = 'c' + idx;
+      const label = String(h || '').trim() || `Column ${idx + 1}`;
+      const vals = rows.map(r => String(r[idx] == null ? '' : r[idx]).trim()).filter(v => v);
+      const col = { key, label, type: 'category', pillarId: '' };
+      if (!vals.length) { col.type = 'meta'; return col; }
+      if (META_RE.test(label)) { col.type = 'meta'; return col; }
+
+      const likertHits = vals.filter(v => likertBucket(v)).length;
+      if (likertHits / vals.length >= 0.6) { col.type = 'likert'; return col; }
+
+      const nums = vals.filter(v => /^-?\d+([.,]\d+)?$/.test(v)).map(v => parseFloat(v.replace(',', '.')));
+      if (nums.length / vals.length >= 0.8) {
+        const max = Math.max(...nums), min = Math.min(...nums);
+        col.type = 'scale';
+        col.min = min; col.max = max;
+        // 0–10 recommendation question → treat as NPS
+        if (min >= 0 && max <= 10 && (/recommend|nps|0\s*[-–]\s*10/i.test(label) || max > 5)) col.nps = true;
+        return col;
+      }
+
+      const avgLen = vals.reduce((n, v) => n + v.length, 0) / vals.length;
+      const uniqueRatio = new Set(vals.map(v => v.toLowerCase())).size / vals.length;
+      if (avgLen > 25 || uniqueRatio > 0.6) { col.type = 'text'; return col; }
+      return col;
+    });
+  }
+
+  // Read a picked/dropped CSV, parse it, detect column types, stage for confirmation.
+  function readCsvFile(file) {
+    if (!/\.csv$/i.test(file.name) && file.type && !/csv|text/.test(file.type)) {
+      window.showToast('Please upload a .csv file (export from Excel or Forms first)', 'warning');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onerror = () => window.showToast('Could not read that file', 'error');
+    reader.onload = () => {
+      try {
+        const text = String(reader.result || '');
+        const grid = parseCSV(text, sniffDelimiter(text));
+        if (grid.length < 2) { window.showToast('That CSV has no data rows', 'warning'); return; }
+        const header = grid[0];
+        const dataRows = grid.slice(1);
+        const columns = detectColumns(header, dataRows);
+        const rows = dataRows.map(r => {
+          const o = {};
+          columns.forEach((c, i) => { o[c.key] = r[i] == null ? '' : String(r[i]); });
+          return o;
+        });
+        dsPending = {
+          filename: file.name,
+          name: file.name.replace(/\.csv$/i, '').slice(0, 80),
+          columns, rows
+        };
+        render();
+      } catch (e) {
+        window.showToast('Could not parse that CSV: ' + e.message, 'error');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  const COL_TYPES = [
+    { k: 'meta', label: 'Metadata (ignore)' }, { k: 'scale', label: 'Numeric / NPS' },
+    { k: 'likert', label: 'Agreement scale' }, { k: 'text', label: 'Free text' },
+    { k: 'category', label: 'Category' }
+  ];
+
+  // ══════════════════════════════════════════
+  // 3 · RESPONSE ANALYTICS
+  // ══════════════════════════════════════════
+  let dsList = [];            // dataset metadata for the current journey
+  let dsActiveId = null;      // selected dataset
+  let dsFull = null;          // full dataset (with rows) for the selected id
+  let dsLoading = false;
+  let dsPending = null;       // parsed-but-unsaved CSV awaiting confirmation
+  let aiEnabled = null;
+  let showTables = {};
+
+  function renderAnalytics() {
+    // Shell — the body is filled asynchronously by loadAnalytics().
+    setTimeout(loadAnalytics, 0);
+    return `<div id="analyticsBody"><div class="empty">Loading response data…</div></div>`;
+  }
+
+  async function loadAnalytics() {
+    const el = document.getElementById('analyticsBody'); if (!el) return;
+    try {
+      if (aiEnabled === null) {
+        try { aiEnabled = (await window.api('GET', '/ai-status')).enabled; } catch (e) { aiEnabled = false; }
+      }
+      dsList = await window.api('GET', `/journeys/${J().id}/datasets`);
+      if (dsActiveId && !dsList.some(d => d.id === dsActiveId)) { dsActiveId = null; dsFull = null; }
+      if (!dsActiveId && dsList.length) dsActiveId = dsList[0].id;
+      if (dsActiveId && (!dsFull || dsFull.id !== dsActiveId)) {
+        dsFull = await window.api('GET', `/datasets/${dsActiveId}`);
+      }
+      el.innerHTML = analyticsHTML();
+    } catch (e) {
+      el.innerHTML = `<div class="empty">Could not load response data: ${esc(e.message)}</div>`;
+    }
+  }
+
+  function analyticsHTML() {
+    if (!dsList.length) {
+      return `<div class="empty" style="padding:44px">
+        No response data yet.<br><br>
+        Upload a survey or interview CSV from <b>Data Collection</b> (step 2) and it will be analysed here.
+        <div style="margin-top:16px"><button class="btn btn-primary btn-sm" onclick="NG.goSection('data')">Go to Data Collection →</button></div>
+      </div>`;
+    }
+    const picker = `<div class="panel"><div class="panel-title">Dataset<span class="spacer"></span>
+      <span class="item-meta">${dsList.length} uploaded</span></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${dsList.map(d => `<button class="pill ${d.id===dsActiveId?'s-active':''}" onclick="NG.selectDataset('${d.id}')">${esc(d.name)} · ${d.row_count}</button>`).join('')}
+      </div></div>`;
+    if (!dsFull) return picker + '<div class="empty">Loading…</div>';
+
+    const cols = dsFull.columns || [], rows = dsFull.rows || [];
+    const scaleCols = cols.filter(c => c.type === 'scale');
+    const likertCols = cols.filter(c => c.type === 'likert');
+    const textCols = cols.filter(c => c.type === 'text');
+    const npsCol = scaleCols.find(c => c.nps);
+
+    // ── tiles ──
+    let tiles = `<div class="tile-row">
+      <div class="tile"><div class="tile-label">Responses</div><div class="tile-value">${rows.length}</div></div>
+      <div class="tile"><div class="tile-label">Questions</div><div class="tile-value">${scaleCols.length + likertCols.length + textCols.length}</div></div>`;
+    if (npsCol) {
+      const n = npsStats(rows, npsCol);
+      tiles += `<div class="tile"><div class="tile-label">NPS</div><div class="tile-value ${n.nps>=0?'green':''}" style="${n.nps<0?'color:var(--lk-1)':''}">${n.nps>0?'+':''}${n.nps}</div></div>`;
+    }
+    if (likertCols.length) {
+      const ag = overallAgreement(rows, likertCols);
+      tiles += `<div class="tile"><div class="tile-label">Overall Agreement</div><div class="tile-value teal">${ag}%</div></div>`;
+    }
+    tiles += `<div class="tile"><div class="tile-label">Free-text answers</div><div class="tile-value gold">${countTextAnswers(rows, textCols)}</div></div></div>`;
+
+    let body = picker + tiles;
+    if (npsCol) body += npsBlock(rows, npsCol);
+    if (likertCols.length) body += likertBlock(rows, likertCols);
+    body += themesBlock();
+    body += mappingBlock(cols);
+    return body;
+  }
+
+  // ── NPS ──
+  function npsStats(rows, col) {
+    let p = 0, pa = 0, d = 0, n = 0;
+    rows.forEach(r => {
+      const v = parseFloat(String(r[col.key] == null ? '' : r[col.key]).replace(',', '.'));
+      if (isNaN(v)) return;
+      n++;
+      if (v >= 9) p++; else if (v >= 7) pa++; else d++;
+    });
+    const pct = x => n ? Math.round(x / n * 100) : 0;
+    return { n, p, pa, d, pP: pct(p), pPa: pct(pa), pD: pct(d), nps: n ? Math.round((p - d) / n * 100) : 0 };
+  }
+  function npsBlock(rows, col) {
+    const s = npsStats(rows, col);
+    const segs = [
+      { l: 'Detractors (0–6)', v: s.pD, c: 'var(--lk-1)', n: s.d },
+      { l: 'Passives (7–8)', v: s.pPa, c: 'var(--lk-na)', n: s.pa },
+      { l: 'Promoters (9–10)', v: s.pP, c: 'var(--lk-4)', n: s.p }
+    ];
+    const key = 'nps';
+    return `<div class="panel">
+      <div class="panel-title">Net Promoter Score<span class="spacer"></span>
+        <button class="tbl-toggle" onclick="NG.toggleTable('${key}')">${showTables[key] ? 'Hide' : 'Show'} data table</button></div>
+      <div class="chart-q">${esc(col.label)}</div>
+      <div class="nps-wrap">
+        <div><div class="nps-score" style="color:${s.nps >= 0 ? 'var(--lk-4)' : 'var(--lk-1)'}">${s.nps > 0 ? '+' : ''}${s.nps}</div>
+          <div class="nps-label">NPS · ${s.n} responses</div></div>
+        <div class="nps-bar">
+          <div class="stack">${segs.map(g => g.v ? `<div class="seg" style="width:${g.v}%;background:${g.c}" title="${esc(g.l)}: ${g.n} (${g.v}%)">${g.v >= 8 ? g.v + '%' : ''}</div>` : '').join('')}</div>
+          <div class="chart-legend">${segs.map(g => `<span class="lg"><span class="sw" style="background:${g.c}"></span>${esc(g.l)} · ${g.n}</span>`).join('')}</div>
+        </div>
+      </div>
+      ${showTables[key] ? `<table class="dv-table"><thead><tr><th>Group</th><th class="num">Responses</th><th class="num">Share</th></tr></thead><tbody>
+        ${segs.map(g => `<tr><td>${esc(g.l)}</td><td class="num">${g.n}</td><td class="num">${g.v}%</td></tr>`).join('')}
+      </tbody></table>` : ''}
+    </div>`;
+  }
+
+  // ── Likert ──
+  function likertCounts(rows, col) {
+    const c = { disagree_strong: 0, disagree_weak: 0, agree_weak: 0, agree_strong: 0, neutral: 0 };
+    let n = 0;
+    rows.forEach(r => { const b = likertBucket(r[col.key]); if (b) { c[b.key]++; n++; } });
+    return { c, n };
+  }
+  function overallAgreement(rows, cols) {
+    let agree = 0, tot = 0;
+    cols.forEach(col => {
+      const { c, n } = likertCounts(rows, col);
+      agree += c.agree_weak + c.agree_strong; tot += n;
+    });
+    return tot ? Math.round(agree / tot * 100) : 0;
+  }
+  function countTextAnswers(rows, cols) {
+    let n = 0;
+    cols.forEach(col => rows.forEach(r => {
+      const v = String(r[col.key] == null ? '' : r[col.key]).trim().toLowerCase();
+      if (v && !['n/a', 'na', 'none', '-', '.', 'no', 'nil'].includes(v)) n++;
+    }));
+    return n;
+  }
+  function likertBlock(rows, cols) {
+    const key = 'likert';
+    // Rank by agreement so the weakest statements surface at the bottom.
+    const scored = cols.map(col => {
+      const { c, n } = likertCounts(rows, col);
+      const agree = n ? Math.round((c.agree_weak + c.agree_strong) / n * 100) : 0;
+      return { col, c, n, agree };
+    }).sort((a, b) => b.agree - a.agree);
+
+    const legend = `<div class="chart-legend">${LIKERT_ORDER.map(k =>
+      `<span class="lg"><span class="sw" style="background:${LIKERT_COLOR[k]}"></span>${esc(LIKERT_LABEL[k])}</span>`).join('')}</div>`;
+
+    const charts = scored.map(s => {
+      if (!s.n) return '';
+      const segs = LIKERT_ORDER.map(k => {
+        const pct = Math.round(s.c[k] / s.n * 100);
+        if (!pct) return '';
+        return `<div class="seg ${LIKERT_DARK_INK[k] ? 'dark-ink' : ''}" style="width:${pct}%;background:${LIKERT_COLOR[k]}"
+                 title="${esc(LIKERT_LABEL[k])}: ${s.c[k]} (${pct}%)">${pct >= 9 ? pct + '%' : ''}</div>`;
+      }).join('');
+      return `<div class="chart-block">
+        <div class="chart-q">${esc(s.col.label)} <span style="color:var(--text-muted);font-weight:400">· ${s.agree}% agree · ${s.n} responses</span></div>
+        <div class="stack">${segs}</div>
+      </div>`;
+    }).join('');
+
+    const table = showTables[key] ? `<table class="dv-table"><thead><tr><th>Statement</th>
+      ${LIKERT_ORDER.map(k => `<th class="num">${esc(LIKERT_LABEL[k])}</th>`).join('')}<th class="num">% Agree</th></tr></thead><tbody>
+      ${scored.map(s => `<tr><td>${esc(s.col.label)}</td>${LIKERT_ORDER.map(k => `<td class="num">${s.c[k]}</td>`).join('')}<td class="num">${s.agree}%</td></tr>`).join('')}
+      </tbody></table>` : '';
+
+    return `<div class="panel">
+      <div class="panel-title">Agreement by statement<span class="spacer"></span>
+        <button class="tbl-toggle" onclick="NG.toggleTable('${key}')">${showTables[key] ? 'Hide' : 'Show'} data table</button></div>
+      ${legend}${charts}${table}
+      <div class="chart-note">Sorted by agreement, strongest first. Statements at the bottom are where the organization is least aligned.</div>
+    </div>`;
+  }
+
+  // ── AI themes ──
+  function themesBlock() {
+    const a = (dsFull && dsFull.analysis) || {};
+    const hasTextCols = (dsFull.columns || []).some(c => c.type === 'text');
+    let head = `<div class="panel-title">Themes in the free-text answers<span class="spacer"></span>`;
+    if (hasTextCols && aiEnabled) {
+      head += `<button class="btn btn-sm ${a.generated_at ? '' : 'btn-primary'}" id="aiRunBtn" onclick="NG.runAnalysis()">${a.generated_at ? '↻ Re-run analysis' : '✨ Analyse responses'}</button>`;
+    }
+    head += `</div>`;
+
+    if (!hasTextCols) {
+      return `<div class="panel">${head}<div class="empty">No free-text questions are mapped in this dataset. Tag a column as <b>Free text</b> below to enable theme analysis.</div></div>`;
+    }
+    if (!aiEnabled) {
+      return `<div class="panel">${head}
+        <div class="ai-off"><b style="color:var(--text)">AI theme analysis isn't configured.</b><br>
+        Clustering free-text answers into themes uses the Claude API. To turn it on, set an
+        <code>ANTHROPIC_API_KEY</code> environment variable on the server (and in the Vercel project settings), then redeploy.<br><br>
+        All the charts above are computed locally and work without it.</div></div>`;
+    }
+    if (!a.generated_at) {
+      return `<div class="panel">${head}<div class="empty">Not analysed yet — run the analysis to cluster responses into themes.</div></div>`;
+    }
+
+    const qs = (a.questions || []).map(q => {
+      const maxN = Math.max(1, ...(q.themes || []).map(t => t.count || 0));
+      const bars = (q.themes || []).map(t => `<div class="mag-row">
+          <div class="mag-track"><div class="mag-fill" style="width:${Math.round((t.count || 0) / maxN * 100)}%"></div></div>
+          <div class="mag-val">${t.count || 0}</div></div>`).join('');
+      const cards = (q.themes || []).map(t => `<div class="theme-card s-${esc(t.sentiment || 'mixed')}">
+          <div class="theme-hd"><div class="theme-name">${esc(t.label)}</div><div class="theme-count">${t.count || 0} responses</div></div>
+          <div class="theme-desc">${esc(t.description)}</div>
+          ${(t.quotes || []).slice(0, 3).map(qt => `<div class="theme-quote">“${esc(qt)}”</div>`).join('')}
+          <div class="theme-impl"><b>Implication:</b> ${esc(t.implication)}</div>
+        </div>`).join('');
+      return `<div style="margin-bottom:22px">
+        <div class="chart-q" style="font-size:13.5px">${esc(q.question)}</div>
+        <div class="item-meta" style="margin-bottom:10px;line-height:1.6">${esc(q.summary)}</div>
+        ${bars}<div style="height:10px"></div>${cards}</div>`;
+    }).join('');
+
+    const insights = (a.overall_insights || []).map((s, i) =>
+      `<div class="insight-item"><div class="n">${i + 1}</div><div>${esc(s)}</div></div>`).join('');
+
+    const trunc = (a.truncated || []).length
+      ? `<div class="chart-note">Note: ${a.truncated.map(t => `“${esc(t.question)}” analysed on the first ${t.used} of ${t.total} answers`).join('; ')}.</div>` : '';
+
+    return `<div class="panel">${head}
+      ${insights ? `<div class="rail-phase-label" style="padding:0 0 8px">Key insights</div>${insights}<div style="height:16px"></div>` : ''}
+      ${qs}${trunc}
+      <div class="chart-note">Generated ${esc(String(a.generated_at).slice(0, 16).replace('T', ' '))} · ${esc(a.model || '')}</div>
+    </div>`;
+  }
+
+  // ── column mapping ──
+  function mappingBlock(cols) {
+    return `<div class="panel">
+      <div class="panel-title">Question mapping<span class="spacer"></span>
+        <span class="item-meta">Tag each column so it charts correctly and rolls up to a pillar</span></div>
+      <div style="overflow-x:auto"><table class="map-table">
+        <thead><tr><th>Question / column</th><th style="width:170px">Type</th><th style="width:200px">Pillar</th></tr></thead>
+        <tbody>${cols.map(c => `<tr>
+          <td class="map-q">${esc(c.label)}</td>
+          <td><select class="sel" onchange="NG.setColType('${c.key}', this.value)">
+            ${COL_TYPES.map(t => `<option value="${t.k}" ${c.type === t.k ? 'selected' : ''}>${t.label}</option>`).join('')}
+          </select></td>
+          <td><select class="sel" onchange="NG.setColPillar('${c.key}', this.value)">${pillarOptions(c.pillarId, true)}</select></td>
+        </tr>`).join('')}</tbody>
+      </table></div>
+      <div class="sec-actions"><button class="btn btn-sm" onclick="NG.deleteDataset()">🗑 Delete this dataset</button></div>
+    </div>`;
+  }
+
   const RENDERERS = {
-    pillars: renderPillars, data: renderData, asis_map: renderAsisMap, asis_report: renderAsisReport,
+    pillars: renderPillars, data: renderData, analytics: renderAnalytics,
+    asis_map: renderAsisMap, asis_report: renderAsisReport,
     tobe_sessions: renderTobeSessions, champions: renderChampions, deliverables: renderDeliverables,
     proposal: renderProposal, roadmap: renderRoadmap
   };
@@ -557,6 +992,67 @@
     },
     editData(id, field, v) { const it = J().data_collection[dataTab].find(x=>x.id===id); if(it){ it[field]=v; window.scheduleSave(); } },
     delData(id) { const a = J().data_collection[dataTab]; const i = a.findIndex(x=>x.id===id); if(i>-1){ a.splice(i,1); commit(); render(); } },
+
+    // ── CSV upload ──
+    onDrop(ev, zone) {
+      ev.preventDefault(); zone.classList.remove('over');
+      const f = ev.dataTransfer && ev.dataTransfer.files && ev.dataTransfer.files[0];
+      if (f) readCsvFile(f);
+    },
+    onCsvPicked(ev) { const f = ev.target.files && ev.target.files[0]; if (f) readCsvFile(f); },
+    setPendingType(key, type) { const c = dsPending.columns.find(c => c.key === key); if (c) { c.type = type; render(); } },
+    cancelUpload() { dsPending = null; render(); },
+    async confirmUpload() {
+      const nameEl = document.getElementById('dsName');
+      const name = nameEl && nameEl.value.trim() ? nameEl.value.trim() : dsPending.name;
+      try {
+        const saved = await window.api('POST', `/journeys/${J().id}/datasets`, {
+          channel: dataTab, name, filename: dsPending.filename,
+          columns: dsPending.columns, rows: dsPending.rows
+        });
+        dsPending = null; dsActiveId = saved.id; dsFull = null;
+        window.showToast(`Saved ${saved.row_count} responses`, 'success');
+        goSection('analytics');
+      } catch (e) { window.showToast(e.message, 'error'); }
+    },
+
+    // ── analytics ──
+    selectDataset(id) { dsActiveId = id; dsFull = null; loadAnalytics(); },
+    toggleTable(k) { showTables[k] = !showTables[k]; loadAnalytics(); },
+    async setColType(key, type) {
+      const c = (dsFull.columns || []).find(c => c.key === key); if (!c) return;
+      c.type = type;
+      try { await window.api('PATCH', `/datasets/${dsFull.id}`, { columns: dsFull.columns }); loadAnalytics(); }
+      catch (e) { window.showToast(e.message, 'error'); }
+    },
+    async setColPillar(key, pid) {
+      const c = (dsFull.columns || []).find(c => c.key === key); if (!c) return;
+      c.pillarId = pid;
+      try { await window.api('PATCH', `/datasets/${dsFull.id}`, { columns: dsFull.columns }); }
+      catch (e) { window.showToast(e.message, 'error'); }
+    },
+    async deleteDataset() {
+      if (!dsFull || !confirm(`Delete “${dsFull.name}” and its ${dsFull.row_count} responses? This cannot be undone.`)) return;
+      try {
+        await window.api('DELETE', `/datasets/${dsFull.id}`);
+        dsActiveId = null; dsFull = null;
+        window.showToast('Dataset deleted', 'success');
+        loadAnalytics();
+      } catch (e) { window.showToast(e.message, 'error'); }
+    },
+    async runAnalysis() {
+      const btn = document.getElementById('aiRunBtn');
+      if (btn) { btn.disabled = true; btn.textContent = '⏳ Analysing responses…'; }
+      try {
+        const a = await window.api('POST', `/datasets/${dsFull.id}/analyze`);
+        dsFull.analysis = a;
+        window.showToast('Analysis complete', 'success');
+        loadAnalytics();
+      } catch (e) {
+        window.showToast(e.message, 'error');
+        if (btn) { btn.disabled = false; btn.textContent = '✨ Analyse responses'; }
+      }
+    },
 
     // asis findings
     fPillarChanged(pid) {
