@@ -1,0 +1,16 @@
+{
+  "name": "nextgen-model",
+  "version": "1.0.0",
+  "description": "NextGen Model — sensemaking, customized diagnostic assessment for organizational transformation — NTT DATA",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "migrate": "node server/migrate.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.0",
+    "express": "^4.21.0",
+    "pg": "^8.13.0"
+  }
+}
