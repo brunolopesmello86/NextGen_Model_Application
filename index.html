@@ -236,6 +236,22 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Ar
 .mat-num { font-weight:800; font-size:15px; min-width:44px; text-align:right; }
 .mat-num.low { color:#d94a4a; } .mat-num.med { color:var(--gold); } .mat-num.high { color:var(--green); }
 
+/* sub-areas within a pillar */
+.sub-block { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px 14px; margin:8px 0; }
+.sub-hdr { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+.sub-name { font-size:13px; font-weight:700; flex:1; }
+.sub-count { font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.6px; }
+.sub-qs { list-style:none; margin:0 0 8px; padding:0; }
+.sub-qs li { display:flex; align-items:flex-start; gap:8px; font-size:12px; color:var(--text-muted); line-height:1.6; padding:4px 0; border-bottom:1px dashed var(--border); }
+.sub-qs li:last-child { border-bottom:none; }
+.sub-qs li span { flex:1; }
+.q-del { background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:11px; padding:0 4px; border-radius:4px; opacity:.5; transition:all .15s; }
+.sub-qs li:hover .q-del { opacity:1; }
+.q-del:hover { color:var(--red); }
+.sub-add { display:flex; gap:8px; align-items:center; }
+.sub-add .inp { flex:1; }
+.sub-empty { font-size:12px; color:var(--text-muted); font-style:italic; padding:4px 0 8px; }
+
 /* progress bar */
 .pbar { height:8px; background:var(--surface2); border-radius:4px; overflow:hidden; }
 .pbar-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--gold)); border-radius:4px; transition:width .3s; }

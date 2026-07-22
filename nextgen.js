@@ -194,11 +194,23 @@
       const open = expanded.has(p.id);
       const m = p.maturity || 0;
       const cls = m <= 1 ? 'low' : m <= 3 ? 'med' : 'high';
-      const subs = (p.subareas || []).map(s => `
-        <div style="margin:10px 0 4px;font-weight:600;font-size:12.5px">${esc(s.name)}</div>
-        <ul style="margin:0 0 6px 18px;color:var(--text-muted);font-size:12px;line-height:1.7">
-          ${(s.questions || []).map(q => `<li>${esc(q)}</li>`).join('')}
-        </ul>`).join('');
+      const subs = (p.subareas || []).map(s => {
+        const qs = s.questions || [];
+        return `<div class="sub-block">
+          <div class="sub-hdr">
+            <div class="sub-name">${esc(s.name)}</div>
+            <span class="sub-count">${qs.length} question${qs.length!==1?'s':''}</span>
+            <button class="icon-btn" title="Remove sub-area" onclick="NG.delSubarea('${p.id}','${s.id}')">🗑</button>
+          </div>
+          ${qs.length ? `<ul class="sub-qs">${qs.map((q,qi)=>`
+            <li><span>${esc(q)}</span><button class="q-del" title="Remove question" onclick="NG.delQuestion('${p.id}','${s.id}',${qi})">✕</button></li>`).join('')}</ul>`
+            : '<div class="sub-empty">No interview questions yet.</div>'}
+          <div class="sub-add">
+            <input class="inp" id="q_${s.id}" placeholder="Add an interview question…" onkeydown="if(event.key==='Enter'){event.preventDefault();NG.addQuestion('${p.id}','${s.id}')}">
+            <button class="btn btn-sm" onclick="NG.addQuestion('${p.id}','${s.id}')">＋ Question</button>
+          </div>
+        </div>`;
+      }).join('') || '<div class="sub-empty">No sub-areas yet — add the ones relevant to this client below.</div>';
       return `<div class="item ${open?'expanded':''}">
         <div class="item-hdr" onclick="NG.tExp('${p.id}')">
           <div class="item-chevron">▶</div>
@@ -218,6 +230,10 @@
           <textarea class="ta" placeholder="Notes on this pillar…" oninput="NG.setPillarNotes('${p.id}', this.value)">${esc(p.notes||'')}</textarea>
           <div class="rail-phase-label" style="padding:12px 0 0">Sub-areas &amp; interview questions</div>
           ${subs}
+          <div class="sub-add" style="margin-top:12px">
+            <input class="inp" id="sa_${p.id}" placeholder="New sub-area name (e.g., Vendor Management)" onkeydown="if(event.key==='Enter'){event.preventDefault();NG.addSubarea('${p.id}')}">
+            <button class="btn btn-primary btn-sm" onclick="NG.addSubarea('${p.id}')">＋ Add sub-area</button>
+          </div>
         </div>
       </div>`;
     }).join('');
@@ -482,6 +498,48 @@
     setPillarNotes(id, v) { const p = J().pillars.find(p=>p.id===id); if(p){ p.notes=v; window.scheduleSave(); } },
     addPillar() { const name = val('npName'); if(!name){ window.showToast('Enter a pillar name','warning'); return; }
       J().pillars.push({ id:uid('p'), name, respondents:val('npResp'), summary:'', maturity:0, subareas:[] }); commit(); render(); },
+
+    // ── sub-areas (each client scopes their own) ──
+    addSubarea(pid) {
+      const p = J().pillars.find(x => x.id === pid); if (!p) return;
+      const name = val('sa_' + pid);
+      if (!name) { window.showToast('Enter a sub-area name','warning'); return; }
+      p.subareas = p.subareas || [];
+      if (p.subareas.some(s => s.name.toLowerCase() === name.toLowerCase())) {
+        window.showToast('That sub-area already exists in this pillar','warning'); return;
+      }
+      p.subareas.push({ id: uid('sa'), name, questions: [] });
+      expanded.add(pid); commit(); render();
+      window.showToast('Sub-area added','success');
+    },
+    delSubarea(pid, sid) {
+      const p = J().pillars.find(x => x.id === pid); if (!p) return;
+      const s = (p.subareas || []).find(x => x.id === sid); if (!s) return;
+      // Findings mapped to this sub-area stay with the pillar but lose the sub-area tag.
+      const linked = (J().asis_findings || []).filter(f => f.pillarId === pid && f.subareaId === sid);
+      let msg = `Remove the sub-area "${s.name}"?`;
+      if ((s.questions || []).length) msg += `\n\nIts ${s.questions.length} interview question(s) will be removed too.`;
+      if (linked.length) msg += `\n\n${linked.length} AS-IS finding(s) are mapped to it. They will be kept under "${p.name}" but lose the sub-area tag.`;
+      if (!confirm(msg)) return;
+      linked.forEach(f => { f.subareaId = ''; });
+      p.subareas = p.subareas.filter(x => x.id !== sid);
+      expanded.add(pid); commit(); render();
+      window.showToast(linked.length ? `Sub-area removed · ${linked.length} finding(s) re-tagged to the pillar` : 'Sub-area removed','success');
+    },
+    addQuestion(pid, sid) {
+      const p = J().pillars.find(x => x.id === pid); if (!p) return;
+      const s = (p.subareas || []).find(x => x.id === sid); if (!s) return;
+      const q = val('q_' + sid);
+      if (!q) { window.showToast('Enter a question','warning'); return; }
+      s.questions = s.questions || []; s.questions.push(q);
+      expanded.add(pid); commit(); render();
+    },
+    delQuestion(pid, sid, idx) {
+      const p = J().pillars.find(x => x.id === pid); if (!p) return;
+      const s = (p.subareas || []).find(x => x.id === sid); if (!s) return;
+      (s.questions || []).splice(idx, 1);
+      expanded.add(pid); commit(); render();
+    },
     resetPillars() { if(!confirm('Reset pillars to the default 4 NextGen pillars? Custom pillars and maturity notes will be replaced.')) return;
       window.api('GET','/default-pillars').then(def=>{ J().pillars = def; commit(); render(); window.showToast('Pillars reset','success'); }); },
 
