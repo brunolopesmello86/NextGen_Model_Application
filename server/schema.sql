@@ -18,7 +18,8 @@ CREATE TABLE IF NOT EXISTS journeys (
     password_hash      TEXT,
     status             TEXT NOT NULL DEFAULT 'as_is',   -- as_is | to_be | roadmap | complete
     -- ── Assessment state (one JSONB column per dashboard section) ──
-    pillars            JSONB NOT NULL DEFAULT '[]',  -- 2.1  Organizational Pillars / Domains (seeded)
+    pillars            JSONB NOT NULL DEFAULT '[]',  -- Organizational Pillars / Domains (seeded)
+    kickoff            JSONB NOT NULL DEFAULT '[]',  -- Assessment Kickoff Workshops
     data_collection    JSONB NOT NULL DEFAULT '{}',  -- 2.2  { surveys:[], gemba:[], interviews:[], leadership:[] }
     asis_findings      JSONB NOT NULL DEFAULT '[]',  -- 2.3  AS-IS mapping findings (tagged by pillar/sub-area)
     asis_report        JSONB NOT NULL DEFAULT '{}',  -- 2.4  AS-IS report (sections, status, link)
@@ -58,6 +59,7 @@ CREATE INDEX IF NOT EXISTS idx_datasets_journey_id ON datasets(journey_id);
 ALTER TABLE journeys ADD COLUMN IF NOT EXISTS password_hash     TEXT;
 ALTER TABLE journeys ADD COLUMN IF NOT EXISTS status            TEXT NOT NULL DEFAULT 'as_is';
 ALTER TABLE journeys ADD COLUMN IF NOT EXISTS pillars           JSONB NOT NULL DEFAULT '[]';
+ALTER TABLE journeys ADD COLUMN IF NOT EXISTS kickoff           JSONB NOT NULL DEFAULT '[]';
 ALTER TABLE journeys ADD COLUMN IF NOT EXISTS data_collection   JSONB NOT NULL DEFAULT '{}';
 ALTER TABLE journeys ADD COLUMN IF NOT EXISTS asis_findings     JSONB NOT NULL DEFAULT '[]';
 ALTER TABLE journeys ADD COLUMN IF NOT EXISTS asis_report       JSONB NOT NULL DEFAULT '{}';

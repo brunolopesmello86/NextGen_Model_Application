@@ -13,31 +13,34 @@
     { key: 'pillars',       num: '1', name: 'Organizational Pillars', phase: 'Setup',
       crumb: 'Setup', title: 'Organizational Pillars / Domains',
       sub: 'The domains the assessment is structured around. Set a current-state maturity read for each and use the seeded interview questions to guide data collection.' },
-    { key: 'data',          num: '2', name: 'Data Collection', phase: 'Phase 1 · AS-IS',
+    { key: 'kickoff',       num: '2', name: 'Assessment Kickoff Workshops', phase: 'Setup',
+      crumb: 'Setup', title: 'Assessment Kickoff Workshops',
+      sub: 'Kick off the assessment with the client — present the pillars and scope, align stakeholders, and mobilize the teams who will take part.' },
+    { key: 'champions',     num: '3', name: 'Champions', phase: 'Setup',
+      crumb: 'Setup', title: 'Champions — Early Adopters',
+      sub: 'From the kickoff, identify early adopters within the client and grow them into champions who help drive the assessment and later adoption.' },
+    { key: 'data',          num: '4', name: 'Data Collection', phase: 'Phase 1 · AS-IS',
       crumb: 'Phase 1 · AS-IS', title: 'Data Collection',
       sub: 'Gather signal from four channels — surveys, Gemba observations, 1:1 interviews and leadership interviews.' },
-    { key: 'analytics',     num: '3', name: 'Response Analytics', phase: 'Phase 1 · AS-IS',
+    { key: 'analytics',     num: '5', name: 'Response Analytics', phase: 'Phase 1 · AS-IS',
       crumb: 'Phase 1 · AS-IS', title: 'Response Analytics',
       sub: 'Analyse uploaded survey and interview responses — scores, agreement patterns, and the themes running through the free-text answers.' },
-    { key: 'asis_map',      num: '4', name: 'AS-IS Mapping', phase: 'Phase 1 · AS-IS',
+    { key: 'asis_map',      num: '6', name: 'AS-IS Mapping', phase: 'Phase 1 · AS-IS',
       crumb: 'Phase 1 · AS-IS', title: 'AS-IS Mapping',
       sub: 'Turn collected data into findings mapped to pillars and sub-areas — the current-state picture.' },
-    { key: 'asis_report',   num: '5', name: 'AS-IS Reporting', phase: 'Phase 1 · AS-IS',
+    { key: 'asis_report',   num: '7', name: 'AS-IS Reporting', phase: 'Phase 1 · AS-IS',
       crumb: 'Phase 1 · AS-IS', title: 'AS-IS Reporting',
-      sub: 'Synthesize the AS-IS mapping into an executive report, pillar by pillar.' },
-    { key: 'tobe_sessions', num: '6', name: 'TO-BE Design Sessions', phase: 'Phase 2 · TO-BE',
+      sub: 'Synthesize the AS-IS mapping into an executive report and score organizational fitness across the pillars, pillar by pillar.' },
+    { key: 'tobe_sessions', num: '8', name: 'TO-BE Design Sessions', phase: 'Phase 2 · TO-BE',
       crumb: 'Phase 2 · TO-BE', title: 'TO-BE Design Sessions (Context-Driven Design)',
       sub: 'Co-design the target state with the client through Context-Driven Design working sessions.' },
-    { key: 'champions',     num: '7', name: 'Champions', phase: 'Phase 2 · TO-BE',
-      crumb: 'Phase 2 · TO-BE', title: 'Champions — Early Adopters',
-      sub: 'Identify early adopters within the client and grow them into champions who drive adoption.' },
-    { key: 'deliverables',  num: '8', name: 'TO-BE Deliverables', phase: 'Phase 2 · TO-BE',
+    { key: 'deliverables',  num: '9', name: 'TO-BE Deliverables', phase: 'Phase 2 · TO-BE',
       crumb: 'Phase 2 · TO-BE', title: 'TO-BE Design Deliverables',
       sub: 'The artifacts produced by the design work — process maps, playbooks, guides and more.' },
-    { key: 'proposal',      num: '9', name: 'TO-BE Final Proposal', phase: 'Phase 2 · TO-BE',
+    { key: 'proposal',      num: '10', name: 'TO-BE Final Proposal', phase: 'Phase 2 · TO-BE',
       crumb: 'Phase 2 · TO-BE', title: 'TO-BE Design Final Proposal',
       sub: 'The consolidated target-state proposal presented to the client.' },
-    { key: 'roadmap',       num: '10', name: 'Transformation Roadmap', phase: 'Phase 3 · Roadmap',
+    { key: 'roadmap',       num: '11', name: 'Transformation Roadmap', phase: 'Phase 3 · Roadmap',
       crumb: 'Phase 3 · Roadmap', title: 'Transformation Roadmap',
       sub: 'The strategic initiatives — sequenced across horizons — that drive the organization to the TO-BE state.' }
   ];
@@ -67,6 +70,7 @@
     switch (key) {
       case 'pillars': return (j.pillars || []).some(p => (p.maturity || 0) > 0);
       case 'data': { const d = j.data_collection || {}; return ['surveys','gemba','interviews','leadership'].some(k => (d[k] || []).length); }
+      case 'kickoff': return (j.kickoff || []).length > 0;
       case 'analytics': return dsList.length > 0;
       case 'asis_map': return (j.asis_findings || []).length > 0;
       case 'asis_report': return !!(j.asis_report && (j.asis_report.executive_summary || Object.keys(j.asis_report.byPillar || {}).length));
@@ -125,7 +129,7 @@
     const s = SECTIONS.find(x => x.key === current); if (!s) { el.innerHTML = ''; return; }
     const done = !!(J().progress || {})[s.key + '_done'];
     const head = `<div class="sec-head">
-      <div class="sec-crumb">${esc(s.crumb)} · Step ${s.num} of 10</div>
+      <div class="sec-crumb">${esc(s.crumb)} · Step ${s.num} of ${SECTIONS.length}</div>
       <div class="sec-title">${esc(s.title)}</div>
       <div class="sec-sub">${esc(s.sub)}</div>
       <div class="sec-actions">
@@ -158,6 +162,66 @@
     const total = SECTIONS.length;
     const doneCount = SECTIONS.filter(s => sectionState(s.key) === 'done').length;
     const pct = Math.round(doneCount / total * 100);
+
+    // ── Maturity model map (the overview hero) ──
+    // Progression (how far through the journey) + organizational maturity (per-lens
+    // AS-IS scores) in one panel: unscored lenses read as "not yet assessed" and fill
+    // in as the assessment advances, so the map visibly grows with the journey.
+    const inLenses = (j.pillars || []).filter(p => p.active !== false);
+    const scoredLenses = inLenses.filter(p => (p.maturity || 0) > 0);
+    const avg = scoredLenses.length ? scoredLenses.reduce((n, p) => n + p.maturity, 0) / scoredLenses.length : 0;
+
+    const ribbon = PHASES.map(ph => {
+      const secs = SECTIONS.filter(s => s.phase === ph);
+      const done = secs.filter(s => sectionState(s.key) === 'done').length;
+      const anyLive = secs.some(s => sectionState(s.key) === 'in-progress');
+      const frac = secs.length ? done / secs.length : 0;
+      const cl = done === secs.length && secs.length ? 'done' : anyLive ? 'active' : '';
+      return `<div class="prog-phase ${cl}">
+        <div class="pp-bar"><div class="pp-fill" style="width:${Math.round(frac * 100)}%"></div></div>
+        <div class="pp-lbl"><span>${esc(ph)}</span><b>${done}/${secs.length}</b></div>
+      </div>`;
+    }).join('');
+
+    const levelHead = `<div class="mhead"><div></div><div class="mlvls">${[1,2,3,4,5].map(L => `<span style="left:${L/5*100}%">${esc(MAT_LEVELS[L])}</span>`).join('')}</div><div></div></div>`;
+    const grid4 = [1,2,3,4].map(L => `<i style="left:${L/5*100}%"></i>`).join('');
+    const rows = inLenses.length ? inLenses.map(p => {
+      const m = p.maturity || 0;
+      if (m <= 0) {
+        return `<div class="mrow na"><div class="ml">${esc(p.name)}</div>
+          <div class="mtrack"><div class="mgrid">${grid4}</div><span class="mempty">Not yet assessed</span></div>
+          <div class="mval na">—</div></div>`;
+      }
+      const cls = matClass(m), pctW = m / 5 * 100;
+      return `<div class="mrow" title="${esc(p.name)} · ${esc(maturityLabel(m))} · Org fitness: ${esc(fitnessTier(m))}"><div class="ml">${esc(p.name)}</div>
+        <div class="mtrack"><div class="mgrid">${grid4}</div><div class="mfill ${cls}" style="width:${pctW}%"></div></div>
+        <div class="mval ${cls}">${fmtM(m)}</div></div>`;
+    }).join('') : '<div class="empty" style="margin:6px 0">No lenses in scope — select what to assess on the Pillars step.</div>';
+
+    // Average reference line over the rows region (aligned to the 1fr track column).
+    const avgLine = avg > 0
+      ? `<div class="mavg" style="left:calc(var(--lw) + var(--gap) + (100% - var(--lw) - var(--vw) - var(--gap) * 2) * ${(avg/5).toFixed(4)})"></div>`
+      : '';
+
+    const maturityMap = `<div class="mmap">
+      <div class="mmap-hd">
+        <div>
+          <div class="t">Organizational Maturity Map</div>
+          <div class="sub">Assessment progression and current-state maturity, lens by lens</div>
+        </div>
+        <div class="mmap-overall">
+          <div class="ov-v" style="color:${avg > 0 ? fitnessColor(avg) : 'var(--text-muted)'}">${avg > 0 ? (Math.round(avg * 10) / 10) : '—'}<small>/5</small></div>
+          <div class="ov-l">${avg > 0 ? esc(maturityLabel(Math.round(avg * 10) / 10)) : 'Not yet assessed'}${avg > 0 ? ` · <b style="color:${fitnessColor(avg)}">${esc(fitnessTier(avg))}</b>` : ''} · ${scoredLenses.length}/${inLenses.length} lenses scored</div>
+        </div>
+      </div>
+      <div class="prog-ribbon">${ribbon}</div>
+      <div class="mchart">
+        ${levelHead}
+        <div class="mchart-body">${avgLine}${rows}</div>
+      </div>
+      <div class="mmap-note">Set each lens's current-state maturity on the <b>Pillars</b> step. Lenses fill in as you assess them — the map grows with the journey, and the <b>AVG</b> line tracks overall maturity across scored lenses. The 5 levels map to the Nexus Org Fitness scale — <b>Initial → Fragile</b>, Developing → Emerging, Defined → Stable, Managed → Resilient, <b>Leading → Antifragile</b>.</div>
+    </div>`;
+
     let flow = '';
     PHASES.forEach(ph => {
       flow += `<div class="phase-band">${esc(ph)}</div><div class="flow-grid">`;
@@ -180,6 +244,7 @@
         <div class="sec-title">${esc(j.name)}</div>
         <div class="sec-sub">${esc(j.description || 'A sensemaking, customized diagnostic across your organizational pillars — AS-IS mapping, TO-BE design, and a transformation roadmap.')}</div>
       </div>
+      ${maturityMap}
       <div class="tile-row">
         <div class="tile"><div class="tile-label">Journey Progress</div><div class="tile-value accent">${pct}%</div><div class="pbar" style="margin-top:8px"><div class="pbar-fill" style="width:${pct}%"></div></div></div>
         <div class="tile"><div class="tile-label">Assessment Scope</div><div class="tile-value">${inScopeLenses}<span style="font-size:14px;color:var(--text-muted)"> lenses</span></div><div class="tile-label" style="margin-top:5px">${inScopeSubs} sub-areas</div></div>
@@ -199,6 +264,35 @@
   function pActive(p) { return p.active !== false; }
   function sInScope(p, s) { return pActive(p) && s.active !== false; }
 
+  // Maturity: a 0–5 scale in half-steps (10 levels above 0). Whole numbers are the
+  // named levels; a half-step reads as a transition between the two it sits between.
+  const MAT_LEVELS = ['Not assessed', 'Initial', 'Developing', 'Defined', 'Managed', 'Leading'];
+  const fmtM = m => (m % 1 === 0) ? String(m) : m.toFixed(1);
+  const matClass = m => m <= 0 ? 'na' : m < 2 ? 'low' : m < 4 ? 'med' : 'high';
+  function maturityLabel(m) {
+    if (m <= 0) return 'Not assessed';
+    if (m % 1 === 0) return MAT_LEVELS[m];
+    return MAT_LEVELS[Math.floor(m)] + ' → ' + MAT_LEVELS[Math.ceil(m)];
+  }
+
+  // ── Nexus Organizational Fitness parallel ──
+  // The 5 maturity levels map 1:1 to the 5 Org Fitness tiers from the Nexus
+  // Transformation Board, so an AS-IS maturity read also expresses org fitness and
+  // the two models line up. Names, order, and 0–100 bands taken from the Nexus report.
+  const FITNESS = ['Not assessed', 'Fragile', 'Emerging', 'Stable', 'Resilient', 'Antifragile'];
+  const FITNESS_META = {
+    Fragile:     { band: '0–19',   color: 'var(--red)',   desc: 'Structural brittleness and high inertia; change does not hold.' },
+    Emerging:    { band: '20–39',  color: '#e8943a',      desc: 'Change is happening but still fragile and inconsistent.' },
+    Stable:      { band: '40–59',  color: 'var(--gold)',  desc: 'Consistent and repeatable; holds under normal load.' },
+    Resilient:   { band: '60–79',  color: 'var(--green)', desc: 'Recovers well from disruption; good practices are spreading.' },
+    Antifragile: { band: '80–100', color: 'var(--teal)',  desc: 'Gains strength from disruption; adapts and improves under stress.' }
+  };
+  // A 0–5 maturity value → its Org Fitness tier (nearest whole level).
+  const fitnessTier = m => m <= 0 ? 'Not assessed' : FITNESS[Math.max(1, Math.min(5, Math.round(m)))];
+  const fitnessColor = m => { const t = fitnessTier(m); return FITNESS_META[t] ? FITNESS_META[t].color : 'var(--text-muted)'; };
+  // Composite org fitness as a 0–100 score (Nexus scale): maturity/5 × 100.
+  const fitnessScore = m => Math.round(m / 5 * 100);
+
   function renderPillars() {
     const j = J();
     const pillars = j.pillars || [];
@@ -217,7 +311,7 @@
       const open = expanded.has(p.id);
       const on = pActive(p);
       const m = p.maturity || 0;
-      const cls = m <= 1 ? 'low' : m <= 3 ? 'med' : 'high';
+      const cls = matClass(m);
       const inScopeSubs = (p.subareas || []).filter(s => s.active !== false).length;
       const subs = (p.subareas || []).map(s => {
         const qs = s.questions || [];
@@ -246,14 +340,22 @@
             <div class="item-meta">${on ? `${inScopeSubs} of ${(p.subareas||[]).length} sub-areas in scope` : 'Not in this assessment'} · ${esc(p.respondents||'')}</div>
           </div>
           <div class="scope-toggle ${on?'on':''}" title="Run this lens for this client" onclick="event.stopPropagation();NG.togglePillar('${p.id}')"><span class="dot"></span>${on?'In scope':'Excluded'}</div>
-          <div class="mat-num ${cls}">${m}/5</div>
+          <div class="mat-num ${cls}" id="math_${p.id}">${fmtM(m)}/5</div>
         </div>
         <div class="item-body">
           <div class="item-meta" style="margin-bottom:10px">${esc(p.summary||'')}</div>
-          <div class="rail-phase-label" style="padding:0 0 4px">Current-state maturity</div>
-          <div class="mat-row">
-            <input class="mat-slider" type="range" min="0" max="5" step="1" value="${m}" oninput="NG.setMaturity('${p.id}', this.value)">
-            <div class="mat-num ${cls}" id="matn_${p.id}">${m}/5</div>
+          <div class="rail-phase-label" style="padding:0 0 6px">Current-state maturity</div>
+          <div class="mat-scale">
+            <input class="mat-slider" type="range" min="0" max="5" step="0.5" value="${m}" oninput="NG.setMaturity('${p.id}', this.value)" aria-label="Maturity for ${esc(p.name)}">
+            <div class="mat-ticks">
+              ${[1,2,3,4,5].map(L => `<span class="mat-tick ${m>=L?'reached':''}" data-p="${p.id}" data-l="${L}" style="left:${L/5*100}%"><i></i><b>${L}</b><em>${esc(MAT_LEVELS[L])}</em></span>`).join('')}
+            </div>
+          </div>
+          <div class="mat-readout">
+            <span class="mat-num ${cls}" id="matn_${p.id}">${fmtM(m)}<small>/5</small></span>
+            <span class="mat-level" id="matl_${p.id}">${esc(maturityLabel(m))}</span>
+            <span class="fit-lbl">Org fitness</span>
+            <span class="fit-chip" id="matf_${p.id}" style="--fc:${fitnessColor(m)}">${esc(fitnessTier(m))}</span>
           </div>
           <textarea class="ta" placeholder="Notes on this pillar…" oninput="NG.setPillarNotes('${p.id}', this.value)">${esc(p.notes||'')}</textarea>
           <div class="rail-phase-label" style="padding:12px 0 0">Sub-areas &amp; interview questions</div>
@@ -405,6 +507,43 @@
   // ══════════════════════════════════════════
   // 4 · AS-IS REPORTING
   // ══════════════════════════════════════════
+  // Organizational Fitness scorecard — evaluates each in-scope capability (lens) and
+  // its practices (sub-areas) on the Nexus Org Fitness scale, derived from AS-IS
+  // maturity. This is the bridge that lets the NextGen and Nexus models connect.
+  function fitnessScorecard() {
+    const inL = (J().pillars || []).filter(p => p.active !== false);
+    const scored = inL.filter(p => (p.maturity || 0) > 0);
+    const avg = scored.length ? scored.reduce((n, p) => n + p.maturity, 0) / scored.length : 0;
+    const scaleTiers = ['Fragile', 'Emerging', 'Stable', 'Resilient', 'Antifragile'];
+    const scale = scaleTiers.map(t => {
+      const meta = FITNESS_META[t];
+      return `<div class="fb" style="background:${meta.color};color:${t === 'Stable' ? '#111' : '#fff'}">${t}<span class="rg">${meta.band}</span></div>`;
+    }).join('');
+    const gridlines = [20, 40, 60, 80].map(x => `<div class="fg" style="left:${x}%"></div>`).join('');
+    const rows = inL.map(p => {
+      const m = p.maturity || 0, tier = fitnessTier(m), sc = fitnessScore(m), col = fitnessColor(m);
+      const inSubs = (p.subareas || []).filter(s => s.active !== false);
+      const pr = inSubs.length ? `${inSubs.length} practice${inSubs.length !== 1 ? 's' : ''}: ${inSubs.map(s => esc(s.name)).join(' · ')}` : 'No practices in scope';
+      return `<div class="frow">
+        <div class="fl">${esc(p.name)}<div class="prac">${pr}</div></div>
+        <div class="fbar">${gridlines}${m > 0 ? `<div class="ff" style="width:${sc}%;background:${col}"></div>` : '<span class="fempty">Not yet assessed</span>'}</div>
+        <div class="ftier" style="color:${m > 0 ? col : 'var(--text-muted)'}">${m > 0 ? esc(tier) : '—'}<small>${m > 0 ? sc + '/100' : ''}</small></div>
+      </div>`;
+    }).join('');
+    return `<div class="panel">
+      <div class="panel-title">Organizational Fitness — AS-IS<span class="spacer"></span><span class="item-meta">Nexus Org Fitness model</span></div>
+      <div class="fscore-hd">
+        <div><div class="fscore-big" style="color:${avg > 0 ? fitnessColor(avg) : 'var(--text-muted)'}">${avg > 0 ? fitnessScore(avg) : '—'}<small>/100</small></div>
+          <div class="tile-label" style="margin-top:6px">Composite fitness</div></div>
+        <div><div style="font-size:22px;font-weight:800;color:${avg > 0 ? fitnessColor(avg) : 'var(--text-muted)'}">${avg > 0 ? esc(fitnessTier(avg)) : 'Not assessed'}</div>
+          <div class="tile-label" style="margin-top:6px">${scored.length}/${inL.length} capabilities scored</div></div>
+        <div style="margin-left:auto;max-width:290px;text-align:right" class="item-meta">Capabilities scored on the Nexus Organizational Fitness scale, mapped from AS-IS maturity. Practices inherit their capability's tier — refine per practice as evidence deepens.</div>
+      </div>
+      <div class="fscale">${scale}</div>
+      ${rows || '<div class="empty">No capabilities in scope — select what to assess on the Pillars step.</div>'}
+    </div>`;
+  }
+
   function renderAsisReport() {
     const r = J().asis_report; const byP = r.byPillar || {};
     const pillarBlocks = (J().pillars || []).map(p => {
@@ -420,6 +559,7 @@
         <textarea class="ta" style="min-height:110px" placeholder="Overall AS-IS narrative and key themes…" oninput="NG.editReport('executive_summary',this.value)">${esc(r.executive_summary||'')}</textarea>
         <div class="field-row wide" style="margin-top:10px"><input class="inp" placeholder="Link to full report (Google Slides / PDF)…" value="${esc(r.link||'')}" oninput="NG.editReport('link',this.value)"></div>
       </div>
+      ${fitnessScorecard()}
       <div class="phase-band">By pillar</div>
       ${pillarBlocks}`;
   }
@@ -942,10 +1082,39 @@
     </div>`;
   }
 
+  // ══════════════════════════════════════════
+  // 2 · ASSESSMENT KICKOFF WORKSHOPS
+  // ══════════════════════════════════════════
+  function renderKickoff() {
+    const items = J().kickoff || [];
+    const form = `<div class="panel"><div class="panel-title">🚀 Add a kickoff workshop</div>
+      <div class="field-row trio"><input class="inp" id="f1" placeholder="Workshop name (e.g., Leadership Kickoff)"><input class="inp" id="f2" type="date"><input class="inp" id="f3" placeholder="Audience / participants"><button class="btn btn-primary btn-sm" onclick="NG.addKickoff()">Add</button></div></div>`;
+    const list = items.map(w => {
+      const open = expanded.has(w.id);
+      return `<div class="item ${open?'expanded':''}">
+        <div class="item-hdr">
+          <div class="item-chevron" onclick="NG.tExp('${w.id}')">▶</div>
+          <div class="item-main" onclick="NG.tExp('${w.id}')"><div class="item-name">${esc(w.name)}</div>
+            <div class="item-meta">${w.date?esc(w.date)+' · ':''}${esc(w.audience||'')}</div></div>
+          <span class="pill s-${w.status||'planned'}" onclick="NG.cycleStatus('kickoff','${w.id}')">${(w.status||'planned').replace('_',' ')}</span>
+          <button class="icon-btn" onclick="NG.delKickoff('${w.id}')">🗑</button>
+        </div>
+        <div class="item-body"><textarea class="ta" placeholder="Agenda, attendees, decisions, agreed scope, candidate champions spotted…" oninput="NG.editKickoff('${w.id}','notes',this.value)">${esc(w.notes||'')}</textarea></div>
+      </div>`;
+    }).join('');
+    return `<div class="panel" style="background:rgba(245,130,31,.05)"><div class="item-meta" style="line-height:1.6">
+        Kickoff workshops open the engagement: present the <b>${(J().pillars||[]).filter(p=>p.active!==false).length}</b> in-scope pillars to the client,
+        confirm scope and respondents, and surface the early adopters you'll grow into <b>champions</b> in the next step.
+      </div></div>
+      ${form}
+      ${list || '<div class="empty">No kickoff workshops scheduled yet.</div>'}`;
+  }
+
   const RENDERERS = {
-    pillars: renderPillars, data: renderData, analytics: renderAnalytics,
+    pillars: renderPillars, kickoff: renderKickoff, champions: renderChampions,
+    data: renderData, analytics: renderAnalytics,
     asis_map: renderAsisMap, asis_report: renderAsisReport,
-    tobe_sessions: renderTobeSessions, champions: renderChampions, deliverables: renderDeliverables,
+    tobe_sessions: renderTobeSessions, deliverables: renderDeliverables,
     proposal: renderProposal, roadmap: renderRoadmap
   };
 
@@ -968,8 +1137,19 @@
     tExp: toggleExpand, cycleStatus,
 
     // pillars
-    setMaturity(id, v) { const p = J().pillars.find(p=>p.id===id); if(!p) return; p.maturity = parseInt(v)||0;
-      const n = document.getElementById('matn_'+id); if (n){ const m=p.maturity; n.textContent=m+'/5'; n.className='mat-num '+(m<=1?'low':m<=3?'med':'high'); } window.scheduleSave(); renderRail(); },
+    setMaturity(id, v) {
+      const p = J().pillars.find(p => p.id === id); if (!p) return;
+      const m = parseFloat(v) || 0; p.maturity = m;
+      const cls = matClass(m), txt = fmtM(m);
+      // Update the collapsed header, the expanded readout, the transition label,
+      // and the tick highlights in place — never re-render mid-drag (it would kill the drag).
+      const hn = document.getElementById('math_' + id); if (hn) { hn.textContent = txt + '/5'; hn.className = 'mat-num ' + cls; }
+      const rn = document.getElementById('matn_' + id); if (rn) { rn.innerHTML = txt + '<small>/5</small>'; rn.className = 'mat-num ' + cls; }
+      const lv = document.getElementById('matl_' + id); if (lv) lv.textContent = maturityLabel(m);
+      const fc = document.getElementById('matf_' + id); if (fc) { fc.textContent = fitnessTier(m); fc.style.setProperty('--fc', fitnessColor(m)); }
+      document.querySelectorAll('.mat-tick[data-p="' + id + '"]').forEach(t => t.classList.toggle('reached', m >= parseFloat(t.getAttribute('data-l'))));
+      window.scheduleSave(); renderRail();
+    },
     setPillarNotes(id, v) { const p = J().pillars.find(p=>p.id===id); if(p){ p.notes=v; window.scheduleSave(); } },
     addPillar() { const name = val('npName'); if(!name){ window.showToast('Enter a pillar name','warning'); return; }
       J().pillars.push({ id:uid('p'), name, respondents:val('npResp'), summary:'', maturity:0, active:true, subareas:[] }); commit(); render(); },
@@ -1127,6 +1307,12 @@
     editReport(field, v) { J().asis_report[field]=v; window.scheduleSave(); renderRail(); },
     editReportPillar(pid, v) { J().asis_report.byPillar = J().asis_report.byPillar||{}; J().asis_report.byPillar[pid]=v; window.scheduleSave(); renderRail(); },
     cycleReportStatus() { const r=J().asis_report; r.status = r.status==='complete'?'in_progress':'complete'; commit(); render(); },
+
+    // kickoff workshops
+    addKickoff() { const name=val('f1'); if(!name){ window.showToast('Enter a workshop name','warning'); return; }
+      J().kickoff.unshift({ id:uid('k'), name, date:val('f2'), audience:val('f3'), status:'planned', notes:'' }); commit(); render(); },
+    editKickoff(id, field, v){ const w=J().kickoff.find(x=>x.id===id); if(w){ w[field]=v; window.scheduleSave(); } },
+    delKickoff(id){ const a=J().kickoff; const i=a.findIndex(x=>x.id===id); if(i>-1){ a.splice(i,1); commit(); render(); } },
 
     // tobe sessions
     addSession() { const name=val('f1'); if(!name){ window.showToast('Enter a session name','warning'); return; }

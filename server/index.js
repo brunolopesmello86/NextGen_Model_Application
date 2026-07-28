@@ -187,6 +187,7 @@ async function ensureSchema() {
       "ALTER TABLE journeys ADD COLUMN IF NOT EXISTS tobe_proposal JSONB NOT NULL DEFAULT '{}'",
       "ALTER TABLE journeys ADD COLUMN IF NOT EXISTS roadmap JSONB NOT NULL DEFAULT '[]'",
       "ALTER TABLE journeys ADD COLUMN IF NOT EXISTS progress JSONB NOT NULL DEFAULT '{}'",
+      "ALTER TABLE journeys ADD COLUMN IF NOT EXISTS kickoff JSONB NOT NULL DEFAULT '[]'",
       `CREATE TABLE IF NOT EXISTS datasets (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         journey_id UUID NOT NULL REFERENCES journeys(id) ON DELETE CASCADE,
@@ -308,12 +309,12 @@ app.get('/api/journeys/:journeyId', async (req, res) => {
 app.put('/api/journeys/:journeyId', async (req, res) => {
   const b = req.body || {};
   const cols = [
-    'status', 'pillars', 'data_collection', 'asis_findings', 'asis_report',
+    'status', 'pillars', 'kickoff', 'data_collection', 'asis_findings', 'asis_report',
     'tobe_sessions', 'champions', 'tobe_deliverables', 'tobe_proposal',
     'roadmap', 'progress'
   ];
   const jsonCols = new Set([
-    'pillars', 'data_collection', 'asis_findings', 'asis_report',
+    'pillars', 'kickoff', 'data_collection', 'asis_findings', 'asis_report',
     'tobe_sessions', 'champions', 'tobe_deliverables', 'tobe_proposal',
     'roadmap', 'progress'
   ]);

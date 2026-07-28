@@ -235,6 +235,25 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Ar
 .mat-slider::-moz-range-thumb { width:16px; height:16px; border-radius:50%; background:var(--accent); cursor:pointer; border:2px solid var(--surface); }
 .mat-num { font-weight:800; font-size:15px; min-width:44px; text-align:right; }
 .mat-num.low { color:#d94a4a; } .mat-num.med { color:var(--gold); } .mat-num.high { color:var(--green); }
+.mat-num.na { color:var(--text-muted); }
+/* maturity scale — 0–5 with 10 half-steps, named levels marked on the line */
+.mat-scale { position:relative; padding-bottom:42px; margin:10px 0 4px; }
+.mat-scale .mat-slider { display:block; width:100%; }
+.mat-ticks { position:absolute; left:8px; right:8px; top:16px; height:0; }
+.mat-tick { position:absolute; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:3px; }
+.mat-tick i { width:2px; height:7px; border-radius:1px; background:var(--border); }
+.mat-tick.reached i { background:var(--accent); }
+.mat-tick b { font-size:10px; font-weight:800; color:var(--text-muted); font-variant-numeric:tabular-nums; line-height:1; }
+.mat-tick.reached b { color:var(--accent); }
+.mat-tick em { font-size:8.5px; font-style:normal; text-transform:uppercase; letter-spacing:.4px; color:var(--text-muted); white-space:nowrap; }
+.mat-tick.reached em { color:var(--text); }
+.mat-readout { display:flex; align-items:baseline; gap:12px; }
+.mat-readout .mat-num { min-width:0; text-align:left; font-size:22px; }
+.mat-readout .mat-num small { font-size:12px; color:var(--text-muted); font-weight:600; margin-left:1px; }
+.mat-level { font-size:12.5px; font-weight:600; color:var(--text-muted); }
+.fit-lbl { font-size:10px; text-transform:uppercase; letter-spacing:.5px; color:var(--text-muted); }
+.fit-chip { font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:.5px; padding:3px 11px; border-radius:20px; color:var(--fc,var(--text-muted)); border:1px solid var(--fc,var(--border)); background:transparent; }
+@media (max-width:560px){ .mat-tick em { display:none; } }
 
 /* scope selection — which pillars / sub-areas run for this client */
 .scope-bar { display:flex; align-items:center; gap:14px; flex-wrap:wrap; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 18px; margin-bottom:16px; }
@@ -275,6 +294,49 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Ar
 /* progress bar */
 .pbar { height:8px; background:var(--surface2); border-radius:4px; overflow:hidden; }
 .pbar-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--gold)); border-radius:4px; transition:width .3s; }
+
+/* ══ JOURNEY OVERVIEW — MATURITY MODEL MAP ══ */
+.mmap { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:22px 24px; margin-bottom:20px; --lw:172px; --vw:44px; --gap:14px; }
+.mmap-hd { display:flex; align-items:flex-end; gap:18px; flex-wrap:wrap; margin-bottom:18px; }
+.mmap-hd .t { font-size:15px; font-weight:800; letter-spacing:-.01em; }
+.mmap-hd .sub { font-size:11.5px; color:var(--text-muted); margin-top:3px; }
+.mmap-overall { margin-left:auto; text-align:right; }
+.mmap-overall .ov-v { font-size:30px; font-weight:800; line-height:1; }
+.mmap-overall .ov-v small { font-size:13px; color:var(--text-muted); font-weight:600; }
+.mmap-overall .ov-l { font-size:10px; text-transform:uppercase; letter-spacing:.6px; color:var(--text-muted); margin-top:5px; }
+
+/* progression ribbon */
+.prog-ribbon { display:flex; gap:8px; margin-bottom:22px; }
+.prog-phase { flex:1; min-width:0; }
+.pp-bar { height:6px; border-radius:3px; background:var(--surface2); overflow:hidden; }
+.pp-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--gold)); border-radius:3px; transition:width .4s; }
+.pp-lbl { font-size:9.5px; text-transform:uppercase; letter-spacing:.4px; color:var(--text-muted); margin-top:7px; display:flex; justify-content:space-between; gap:6px; }
+.pp-lbl b { font-weight:700; font-variant-numeric:tabular-nums; }
+.prog-phase.done .pp-lbl { color:var(--green); }
+.prog-phase.active .pp-lbl { color:var(--gold); }
+
+/* maturity chart */
+.mchart { position:relative; }
+.mhead { display:grid; grid-template-columns:var(--lw) 1fr var(--vw); gap:var(--gap); margin-bottom:8px; }
+.mlvls { position:relative; height:13px; grid-column:2; }
+.mlvls span { position:absolute; transform:translateX(-50%); font-size:8.5px; text-transform:uppercase; letter-spacing:.4px; color:var(--text-muted); opacity:.85; white-space:nowrap; }
+.mchart-body { position:relative; }
+.mrow { display:grid; grid-template-columns:var(--lw) 1fr var(--vw); gap:var(--gap); align-items:center; padding:6px 0; }
+.mrow .ml { font-size:12.5px; font-weight:600; text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.mrow.na .ml { color:var(--text-muted); font-weight:500; }
+.mtrack { position:relative; height:22px; background:var(--surface2); border-radius:6px; overflow:hidden; }
+.mgrid i { position:absolute; top:0; bottom:0; width:1px; background:var(--border); opacity:.55; }
+.mfill { position:absolute; left:0; top:0; bottom:0; border-radius:6px 0 0 6px; transition:width .4s; }
+.mfill.low  { background:linear-gradient(90deg,rgba(217,74,74,.9),rgba(217,74,74,.62)); }
+.mfill.med  { background:linear-gradient(90deg,var(--gold),rgba(242,193,78,.65)); }
+.mfill.high { background:linear-gradient(90deg,var(--green),rgba(45,157,94,.65)); }
+.mempty { position:absolute; left:11px; top:50%; transform:translateY(-50%); font-size:10px; color:var(--text-muted); font-style:italic; }
+.mval { font-size:13px; font-weight:800; font-variant-numeric:tabular-nums; text-align:left; }
+.mval.na { color:var(--text-muted); font-weight:600; }
+.mavg { position:absolute; top:-4px; bottom:0; width:2px; background:var(--accent); z-index:2; pointer-events:none; }
+.mavg::before { content:'AVG'; position:absolute; top:-13px; left:50%; transform:translateX(-50%); font-size:8px; font-weight:800; letter-spacing:.6px; color:var(--accent); }
+.mmap-note { font-size:11px; color:var(--text-muted); margin-top:14px; padding-top:12px; border-top:1px dashed var(--border); line-height:1.5; }
+@media (max-width:600px){ .mmap { --lw:104px; } .mlvls span { font-size:7.5px; } }
 
 /* overview flow cards */
 .flow-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:12px; }
@@ -352,6 +414,25 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Ar
 .insight-item .n { flex-shrink:0; width:20px; height:20px; border-radius:6px; background:var(--accent); color:#fff; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; }
 .ai-off { border:1px dashed var(--border); border-radius:12px; padding:20px; font-size:12.5px; color:var(--text-muted); line-height:1.6; }
 .ai-off code { background:var(--surface2); padding:2px 6px; border-radius:4px; font-size:11.5px; color:var(--text); }
+
+/* ══ AS-IS ORGANIZATIONAL FITNESS SCORECARD (Nexus model) ══ */
+.fscore-hd { display:flex; align-items:flex-start; gap:26px; flex-wrap:wrap; margin-bottom:16px; }
+.fscore-big { font-size:40px; font-weight:800; line-height:1; }
+.fscore-big small { font-size:15px; color:var(--text-muted); font-weight:600; }
+.fscale { display:flex; gap:2px; margin:2px 0 18px; border-radius:7px; overflow:hidden; }
+.fscale .fb { flex:1; text-align:center; font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:.4px; padding:6px 2px; }
+.fscale .fb .rg { display:block; font-size:8px; font-weight:600; opacity:.85; margin-top:2px; }
+.frow { display:grid; grid-template-columns:190px 1fr 104px; gap:16px; align-items:center; padding:11px 0; border-top:1px solid var(--border); }
+.frow.hd { border-top:none; padding:0 0 4px; }
+.frow .fl { font-size:13.5px; font-weight:700; min-width:0; }
+.frow .fl .prac { font-size:10.5px; color:var(--text-muted); font-weight:400; margin-top:4px; line-height:1.45; }
+.fbar { position:relative; height:18px; background:var(--surface2); border-radius:5px; overflow:hidden; }
+.fbar .ff { position:absolute; left:0; top:0; bottom:0; border-radius:5px; transition:width .4s; }
+.fbar .fg { position:absolute; top:0; bottom:0; width:1px; background:var(--border); opacity:.5; }
+.fbar .fempty { position:absolute; left:10px; top:50%; transform:translateY(-50%); font-size:10px; color:var(--text-muted); font-style:italic; }
+.ftier { text-align:right; font-size:11.5px; font-weight:800; text-transform:uppercase; letter-spacing:.4px; line-height:1.2; }
+.ftier small { display:block; font-size:10px; color:var(--text-muted); font-weight:700; letter-spacing:0; margin-top:2px; }
+@media (max-width:620px){ .frow { grid-template-columns:1fr 84px; } .frow .fbar { grid-column:1 / -1; order:3; } }
 
 /* data table view (accessibility fallback for every chart) */
 .tbl-toggle { font-size:11px; color:var(--text-muted); cursor:pointer; text-decoration:underline; background:none; border:none; padding:0; }
@@ -542,7 +623,7 @@ async function saveJourney() {
   try {
     await api('PUT', `/journeys/${J.id}`, {
       status: J.status,
-      pillars: J.pillars, data_collection: J.data_collection,
+      pillars: J.pillars, kickoff: J.kickoff, data_collection: J.data_collection,
       asis_findings: J.asis_findings, asis_report: J.asis_report,
       tobe_sessions: J.tobe_sessions, champions: J.champions,
       tobe_deliverables: J.tobe_deliverables, tobe_proposal: J.tobe_proposal,
@@ -560,6 +641,7 @@ window.saveJourney = saveJourney; window.scheduleSave = scheduleSave;
 // Normalize a freshly loaded journey so every section field is the right shape.
 function normalizeJourney(j) {
   j.pillars = Array.isArray(j.pillars) ? j.pillars : [];
+  j.kickoff = Array.isArray(j.kickoff) ? j.kickoff : [];
   j.data_collection = j.data_collection && typeof j.data_collection==='object' ? j.data_collection : {};
   ['surveys','gemba','interviews','leadership'].forEach(k => { if (!Array.isArray(j.data_collection[k])) j.data_collection[k] = []; });
   j.asis_findings = Array.isArray(j.asis_findings) ? j.asis_findings : [];
