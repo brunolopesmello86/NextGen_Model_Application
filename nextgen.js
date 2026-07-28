@@ -409,7 +409,7 @@
       list = items.map(it => dataItem(it, esc(it.role||''))).join('');
     }
     const badge = DATA_TABS.find(t=>t.k===dataTab).badge;
-    const canUpload = dataTab === 'surveys' || dataTab === 'interviews';
+    const canUpload = true;   // all four channels accept CSV uploads
     const upload = canUpload ? `<div class="panel">
       <div class="panel-title">📄 Upload responses (CSV)<span class="spacer"></span>
         <span class="item-meta">Export your Forms/Excel results as CSV</span></div>
@@ -719,7 +719,7 @@
     return best;
   }
 
-  const META_RE = /^(id|#|no\.?|start ?time|completion ?time|submit(ted)?( ?time)?|last ?modified( ?time)?|email|e-?mail|name|full ?name|respondent|interviewee|interviewer|participant|timestamp|date)$/i;
+  const META_RE = /^(id|#|no\.?|start ?time|completion ?time|submit(ted)?( ?time)?|last ?modified( ?time)?|email|e-?mail|name|full ?name|respondent|interviewee|interviewer|leader|attendee|observer|participant|timestamp|date)$/i;
   const DATE_RE = /^\d{4}[-/]\d{1,2}[-/]\d{1,2}|^\d{1,2}[-/]\d{1,2}[-/]\d{2,4}/;
   // Tolerates the "Desagree" spelling that appears in the real NextGen exports.
   const LIKERT_SCALE = [
