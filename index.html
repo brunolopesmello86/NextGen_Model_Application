@@ -6,25 +6,25 @@
 <title>NextGen Model — Organizational Assessment</title>
 <style>
 :root {
-  /* Dark mode — black / white / orange, with gold-yellow secondary accents (NTT DATA) */
-  --bg: #0b0b0c;
-  --surface: #141416;
-  --surface2: #1d1d21;
-  --border: #2d2d33;
-  --text: #f4f4f1;
-  --text-muted: #97978f;
-  --accent: #f5821f;
+  /* Dark mode — Nexus Transformation Board palette: deep-navy ground, teal primary, orange secondary */
+  --bg: #050D18;
+  --surface: #07182A;
+  --surface2: #0C2137;
+  --border: #1E4266;
+  --text: #DCEBF7;
+  --text-muted: #7C93AB;
+  --accent: #19A7A1;        /* teal — primary accent */
   --blue: #2c3e6b;
-  --blue-light: #3a5a9c;
+  --blue-light: #3C6EB4;
   --green: #2d9d5e;
   --red: #d94a4a;
-  --orange: #f5821f;
-  --purple: #7b5ea7;
-  --cyan: #f2c14e;
-  --gold: #f2c14e;
-  --gold2: #ffd75e;
-  --teal: #38b2a0;
-  --header-bg: #121214;
+  --orange: #E2801E;        /* orange — secondary accent */
+  --purple: #9B8CD9;
+  --cyan: #7FE3DD;          /* glow teal — highlight */
+  --gold: #F2C14E;          /* amber — kept distinct for the semantic "medium" band (maturity / fitness) */
+  --gold2: #FFD75E;
+  --teal: #38B2A0;
+  --header-bg: #07182A;
   --gray: #8b949e;
 }
 /* ── Light theme — executive navy/orange ── */
@@ -68,7 +68,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Ar
 .intro-bg-canvas { position:absolute; inset:0; z-index:0; }
 .intro-content { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:20px; animation:introFadeIn 1.2s ease-out; }
 @keyframes introFadeIn { 0%{opacity:0;transform:translateY(30px)} 100%{opacity:1;transform:translateY(0)} }
-.intro-mobius { width:150px; height:80px; display:flex; align-items:center; justify-content:center; animation:logoFloat 4s ease-in-out infinite; filter:drop-shadow(0 0 28px rgba(245,130,31,.35)); }
+.intro-mobius { width:150px; height:80px; display:flex; align-items:center; justify-content:center; animation:logoFloat 4s ease-in-out infinite; filter:drop-shadow(0 0 28px rgba(226,128,30,.4)); }
 .intro-mobius svg { width:100%; height:100%; display:block; }
 @keyframes logoFloat { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-10px) scale(1.02)} }
 .intro-title { font-size:36px; font-weight:800; background:linear-gradient(90deg,var(--accent),var(--gold2),var(--accent)); background-size:200% auto; -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-align:center; animation:titleShimmer 4s linear infinite; letter-spacing:-.5px; }
@@ -77,15 +77,15 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Ar
 .intro-menu { display:flex; flex-direction:column; gap:12px; width:340px; margin-top:16px; animation:menuSlideUp 1s ease-out .4s both; }
 @keyframes menuSlideUp { 0%{opacity:0;transform:translateY(20px)} 100%{opacity:1;transform:translateY(0)} }
 .intro-menu-btn { position:relative; padding:16px 24px; border-radius:12px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-size:15px; font-weight:600; cursor:pointer; transition:all .25s ease; display:flex; align-items:center; gap:14px; overflow:hidden; }
-.intro-menu-btn::before { content:''; position:absolute; inset:0; background:linear-gradient(90deg,transparent,rgba(245,130,31,.05),transparent); transform:translateX(-100%); transition:transform .5s ease; }
+.intro-menu-btn::before { content:''; position:absolute; inset:0; background:linear-gradient(90deg,transparent,rgba(25,167,161,.05),transparent); transform:translateX(-100%); transition:transform .5s ease; }
 .intro-menu-btn:hover::before { transform:translateX(100%); }
-.intro-menu-btn:hover { border-color:var(--accent); transform:translateX(4px); box-shadow:0 4px 20px rgba(245,130,31,.15); }
+.intro-menu-btn:hover { border-color:var(--accent); transform:translateX(4px); box-shadow:0 4px 20px rgba(25,167,161,.15); }
 .intro-menu-btn .imb-icon { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
 .intro-menu-btn .imb-text { display:flex; flex-direction:column; gap:2px; text-align:left; }
 .intro-menu-btn .imb-label { font-size:15px; font-weight:600; }
 .intro-menu-btn .imb-desc { font-size:11px; color:var(--text-muted); font-weight:400; }
-.intro-menu-btn.primary { border-color:var(--accent); background:linear-gradient(135deg,rgba(245,130,31,.12),rgba(123,94,167,.08)); }
-.intro-menu-btn.primary:hover { background:linear-gradient(135deg,rgba(245,130,31,.2),rgba(123,94,167,.15)); box-shadow:0 4px 30px rgba(245,130,31,.25); }
+.intro-menu-btn.primary { border-color:var(--accent); background:linear-gradient(135deg,rgba(25,167,161,.12),rgba(123,94,167,.08)); }
+.intro-menu-btn.primary:hover { background:linear-gradient(135deg,rgba(25,167,161,.2),rgba(123,94,167,.15)); box-shadow:0 4px 30px rgba(25,167,161,.25); }
 .intro-menu-btn.continue { border-color:rgba(242,193,78,.3); background:linear-gradient(135deg,rgba(242,193,78,.08),rgba(45,157,94,.05)); }
 .intro-menu-btn.continue:hover { border-color:var(--cyan); background:linear-gradient(135deg,rgba(242,193,78,.15),rgba(45,157,94,.1)); box-shadow:0 4px 30px rgba(242,193,78,.2); }
 .intro-footer { margin-top:32px; color:var(--text-muted); font-size:11px; opacity:.5; animation:introFadeIn 1.5s ease-out .8s both; text-align:center; line-height:1.6; }
@@ -102,7 +102,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Ar
 .gs-back:hover { border-color:var(--accent); color:var(--accent); }
 .gs-section-label { font-size:10px; text-transform:uppercase; letter-spacing:1.2px; color:var(--text-muted); margin-bottom:10px; font-weight:600; }
 .gs-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px 22px; margin-bottom:10px; cursor:pointer; transition:all .2s ease; display:flex; justify-content:space-between; align-items:center; position:relative; overflow:hidden; }
-.gs-card::before { content:''; position:absolute; inset:0; background:linear-gradient(90deg,transparent,rgba(245,130,31,.03),transparent); transform:translateX(-100%); transition:transform .4s ease; }
+.gs-card::before { content:''; position:absolute; inset:0; background:linear-gradient(90deg,transparent,rgba(25,167,161,.03),transparent); transform:translateX(-100%); transition:transform .4s ease; }
 .gs-card:hover::before { transform:translateX(100%); }
 .gs-card:hover { border-color:var(--accent); transform:translateY(-2px); box-shadow:0 6px 24px rgba(0,0,0,.3); }
 .gs-card .gs-name { font-weight:600; font-size:15px; }
@@ -113,11 +113,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Ar
 .gs-form { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px; margin-top:8px; }
 .gs-form-title { font-size:13px; font-weight:600; margin-bottom:14px; display:flex; align-items:center; gap:8px; color:var(--text); }
 .gs-form input, .gs-form textarea { width:100%; padding:10px 14px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; color:var(--text); font-size:13px; margin-bottom:10px; transition:border-color .2s; }
-.gs-form input:focus, .gs-form textarea:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(245,130,31,.1); }
+.gs-form input:focus, .gs-form textarea:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(25,167,161,.1); }
 .gs-form textarea { resize:vertical; min-height:50px; font-family:inherit; }
 .gs-form .btn { width:100%; padding:12px; font-size:14px; font-weight:600; border-radius:10px; }
 .gs-empty { text-align:center; color:var(--text-muted); padding:40px; font-size:14px; border:1px dashed var(--border); border-radius:14px; }
-.gs-org-badge { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:8px; background:rgba(245,130,31,.1); border:1px solid rgba(245,130,31,.2); font-size:12px; color:var(--accent); font-weight:500; }
+.gs-org-badge { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:8px; background:rgba(25,167,161,.1); border:1px solid rgba(25,167,161,.2); font-size:12px; color:var(--accent); font-weight:500; }
 .gs-card-actions { display:flex; align-items:center; gap:8px; }
 .gs-status-pill { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; padding:4px 10px; border-radius:20px; }
 .gs-delete-btn { background:none; border:1px solid var(--border); border-radius:8px; padding:6px 10px; color:var(--text-muted); font-size:12px; cursor:pointer; transition:all .2s; z-index:2; }
@@ -137,7 +137,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Ar
 .gs-pw-error { color:#d94a4a; font-size:12px; margin-bottom:8px; display:none; }
 
 /* ══ HEADER ══ */
-.app-header { background:linear-gradient(135deg,#0e0e10,#161618); border-bottom:2px solid var(--accent); padding:10px 20px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
+.app-header { background:linear-gradient(135deg,#061423,#0A1E33); border-bottom:2px solid var(--accent); padding:10px 20px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
 .logo { display:flex; align-items:center; gap:10px; flex-shrink:0; cursor:default; }
 .logo-mobius { width:46px; height:26px; display:flex; align-items:center; justify-content:center; }
 .logo-mobius svg { width:100%; height:100%; display:block; }
@@ -157,7 +157,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Ar
 .rail-phase-label { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); font-weight:700; padding:0 8px 8px; }
 .rail-item { display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:9px; cursor:pointer; transition:all .15s; margin-bottom:2px; border:1px solid transparent; }
 .rail-item:hover { background:var(--surface2); }
-.rail-item.active { background:rgba(245,130,31,.1); border-color:rgba(245,130,31,.35); }
+.rail-item.active { background:rgba(25,167,161,.1); border-color:rgba(25,167,161,.35); }
 .rail-item.active .rail-name { color:var(--accent); }
 .rail-num { width:24px; height:24px; flex-shrink:0; border-radius:7px; background:var(--surface2); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:var(--text-muted); }
 .rail-item.active .rail-num { background:var(--accent); color:#fff; border-color:var(--accent); }
@@ -213,7 +213,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Ar
 .icon-btn:hover { border-color:#d94a4a; color:#d94a4a; }
 
 .badge { display:inline-block; padding:2px 9px; border-radius:6px; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; margin-right:6px; }
-.badge.b-survey { background:rgba(245,130,31,.15); color:var(--accent); }
+.badge.b-survey { background:rgba(25,167,161,.15); color:var(--accent); }
 .badge.b-gemba { background:rgba(56,178,160,.15); color:var(--teal); }
 .badge.b-interview { background:rgba(123,94,167,.18); color:#b79ce0; }
 .badge.b-leadership { background:rgba(242,193,78,.16); color:var(--gold); }
@@ -350,7 +350,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Ar
 
 /* ══ CSV UPLOAD ══ */
 .drop-zone { border:2px dashed var(--border); border-radius:12px; padding:26px; text-align:center; cursor:pointer; transition:all .2s; background:var(--surface2); }
-.drop-zone:hover, .drop-zone.over { border-color:var(--accent); background:rgba(245,130,31,.06); }
+.drop-zone:hover, .drop-zone.over { border-color:var(--accent); background:rgba(25,167,161,.06); }
 .drop-zone .dz-icon { font-size:26px; margin-bottom:8px; }
 .drop-zone .dz-main { font-size:13px; font-weight:600; margin-bottom:4px; }
 .drop-zone .dz-sub { font-size:11.5px; color:var(--text-muted); }
@@ -478,7 +478,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Ar
     <div class="intro-sub">A sensemaking, customized diagnostic approach to organizational assessment. Map the AS-IS across your pillars, co-design the TO-BE, and drive a transformation roadmap with your champions.</div>
     <div class="intro-menu" id="introMenu">
       <button class="intro-menu-btn primary" onclick="showNewJourney()">
-        <div class="imb-icon" style="background:linear-gradient(135deg,rgba(245,130,31,.22),rgba(242,193,78,.18));">🎯</div>
+        <div class="imb-icon" style="background:linear-gradient(135deg,rgba(25,167,161,.22),rgba(242,193,78,.18));">🎯</div>
         <div class="imb-text"><div class="imb-label">New Assessment</div><div class="imb-desc">Create a client &amp; start an assessment journey</div></div>
       </button>
       <button class="intro-menu-btn continue" onclick="showContinueJourney()" id="btnContinue">
