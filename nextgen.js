@@ -719,7 +719,8 @@
     return best;
   }
 
-  const META_RE = /^(id|start ?time|completion ?time|submit(ted)?( ?time)?|last ?modified( ?time)?|email|name|respondent|timestamp|date)$/i;
+  const META_RE = /^(id|#|no\.?|start ?time|completion ?time|submit(ted)?( ?time)?|last ?modified( ?time)?|email|e-?mail|name|full ?name|respondent|interviewee|interviewer|participant|timestamp|date)$/i;
+  const DATE_RE = /^\d{4}[-/]\d{1,2}[-/]\d{1,2}|^\d{1,2}[-/]\d{1,2}[-/]\d{2,4}/;
   // Tolerates the "Desagree" spelling that appears in the real NextGen exports.
   const LIKERT_SCALE = [
     { key: 'disagree_strong', order: 1, label: 'Disagree',          re: /^(strongly\s+)?d[ei]sagree$/i },
@@ -767,6 +768,8 @@
       const col = { key, label, type: 'category', pillarId: '' };
       if (!vals.length) { col.type = 'meta'; return col; }
       if (META_RE.test(label)) { col.type = 'meta'; return col; }
+      // Mostly date/time values → metadata (timestamps aren't questions).
+      if (vals.filter(v => DATE_RE.test(v)).length / vals.length >= 0.7) { col.type = 'meta'; return col; }
       // A junk header means there's no question behind the column — keep it out of
       // the charts rather than plotting a nameless statement. Retypable in the UI.
       if (JUNK_HEADER_RE.test(label)) { col.type = 'meta'; col.junkHeader = true; return col; }
