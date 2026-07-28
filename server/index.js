@@ -9,91 +9,143 @@ function hashPassword(pw) {
   return crypto.createHash('sha256').update(pw).digest('hex');
 }
 
-// ── Default pillar structure (from the NextGen AS-IS Pillars questionnaire) ──
-// Seeded into every new journey; fully editable per journey afterward.
+// ── Default pillar model — NTT DATA 360° organizational diagnosis ──
+// Six lenses spanning direction → operating model → enablement → people → outcomes,
+// each with the sub-areas assessed under it. Industry-neutral: seeded into every new
+// journey as a starting point, then trimmed and tailored per client via the Pillars step.
 const DEFAULT_PILLARS = [
   {
     id: 'p_strategy',
-    name: 'Strategic Planning & Governance',
-    summary: 'How work is prioritized, governed, and structured; decision-making bottlenecks; strategy-execution alignment.',
-    respondents: 'Senior leaders, portfolio/program managers, governance committee members, strategic planners.',
+    name: 'Strategy & Governance',
+    summary: 'Whether there is a clear, shared strategy, and how well decisions, risk, and leadership sponsorship are governed.',
+    respondents: 'Executives, portfolio/program leaders, governance & risk owners, strategic planners.',
+    maturity: 0,
+    subareas: [
+      { id: 'sa_strategy', name: 'Strategy & Alignment', questions: [
+        'Is there a clear, documented strategy, and how well is it understood across levels?',
+        'How are strategic priorities translated into the work teams actually do?',
+        'Where do you see misalignment between the stated strategy and day-to-day decisions?' ] },
+      { id: 'sa_leadership', name: 'Leadership & Sponsorship', questions: [
+        'How visible and active is leadership sponsorship for the key initiatives?',
+        'How are decisions made, and how quickly do they get unblocked when escalated?',
+        'Where does leadership behaviour most help or hinder the way work gets done?' ] },
+      { id: 'sa_governance', name: 'Governance Model', questions: [
+        'How are decisions made for strategic priorities, funding, and scope changes?',
+        'What committees, forums, or decision-making bodies are in place?',
+        'How effective is the current governance in balancing speed and control?' ] },
+      { id: 'sa_risk', name: 'Risk, Compliance & Resilience', questions: [
+        'How are risks, compliance obligations, and controls managed today?',
+        'How prepared is the organization to respond to disruption or regulatory change?',
+        'Where do controls create unnecessary friction, and where are there gaps?' ] }
+    ]
+  },
+  {
+    id: 'p_demand',
+    name: 'Demand & Investment',
+    summary: 'How work and funding enter the system, and how the organization is structured and financed to deliver value.',
+    respondents: 'Portfolio/PMO leaders, finance & investment partners, business-unit heads, planners.',
     maturity: 0,
     subareas: [
       { id: 'sa_demand', name: 'Demand Management', questions: [
         'How are new initiatives or requests currently captured and prioritized?',
         'What criteria are used to decide which demands move forward?',
         'What challenges do you face in the current demand process?' ] },
-      { id: 'sa_governance', name: 'Governance Model', questions: [
-        'How are decisions made for strategic priorities, funding, and scope changes?',
-        'What committees, forums, or decision-making bodies are in place?',
-        'How effective is the current governance in balancing speed and control?' ] },
-      { id: 'sa_structure', name: 'Structure & Relationships', questions: [
+      { id: 'sa_funding', name: 'Investment & Funding Model', questions: [
+        'How is work funded today — by project, by product/team, or another model?',
+        'How transparent is spend, and how easily can funding shift as priorities change?',
+        'Where does the funding model most help or constrain how value is delivered?' ] },
+      { id: 'sa_structure', name: 'Structure & Operating Design', questions: [
         'How is the organization currently structured to deliver work?',
-        'How do different departments/teams collaborate?',
-        'Where do you see silos, misalignments, or strong collaboration?' ] }
+        'How do different departments/teams collaborate across boundaries?',
+        'Where do you see silos, misalignments, or particularly strong collaboration?' ] }
     ]
   },
   {
-    id: 'p_process',
-    name: 'Processes, Tools & IT',
-    summary: 'Current operational flow, bottlenecks, tool & process effectiveness, and where metrics drive decisions.',
-    respondents: 'Product owners, project managers, delivery managers, IT leads, business analysts.',
+    id: 'p_delivery',
+    name: 'Delivery & Value',
+    summary: 'How value flows end-to-end, how work is discovered and planned, and whether delivery is predictable and high-quality.',
+    respondents: 'Delivery leads, product owners, operations & quality managers, team leads.',
     maturity: 0,
     subareas: [
       { id: 'sa_vsm', name: 'Value Stream Mapping', questions: [
         'How well do you understand the end-to-end flow of work in your area?',
         'Are bottlenecks or delays visible? If so, where?',
         'Are there handoffs or dependencies that slow delivery?' ] },
+      { id: 'sa_discovery', name: 'Product Discovery & Delivery', questions: [
+        'How are ideas validated before delivery starts?',
+        'What is the current approach to product/project planning?',
+        'Which tools and practices are most and least effective in managing delivery?' ] },
+      { id: 'sa_quality', name: 'Delivery Quality & Operational Excellence', questions: [
+        'How is quality measured, and are service levels clear and consistently met?',
+        'Which ways of working are standardized across teams, and which work well?',
+        'Where do you see the biggest risks to delivery quality or consistency?' ] }
+    ]
+  },
+  {
+    id: 'p_enablement',
+    name: 'Technology, Data & Measurement',
+    summary: 'The technical and data foundations that enable the operating model, and how performance is measured and used.',
+    respondents: 'IT & architecture leads, data & analytics leads, engineering managers, business analysts.',
+    maturity: 0,
+    subareas: [
+      { id: 'sa_tech', name: 'Technology & Architecture', questions: [
+        'How well do current platforms and architecture support the way you need to work?',
+        'Where do technical debt, tooling, or integration gaps slow delivery?',
+        'How are engineering and technology practices evolving toward the target state?' ] },
+      { id: 'sa_data', name: 'Data, Analytics & AI-Readiness', questions: [
+        'How available, trusted, and usable is the data you need to make decisions?',
+        'How data-driven are decisions today versus based on intuition or hierarchy?',
+        'How ready is the organization to adopt advanced analytics and AI?' ] },
       { id: 'sa_metrics', name: 'Metrics, KPIs & OKRs', questions: [
         'What metrics or KPIs do you track regularly?',
         'How are these metrics used in decision-making?',
-        'Where do you see gaps in measurement or data quality?' ] },
-      { id: 'sa_discovery', name: 'Product Discovery & Project Management', questions: [
-        'How are ideas validated before delivery starts?',
-        'What is the current approach to project/product planning?',
-        'Which tools and practices are most/least effective in managing delivery?' ] }
+        'Where do you see gaps in measurement or data quality?' ] }
     ]
   },
   {
     id: 'p_people',
-    name: 'People & Culture',
-    summary: 'Role clarity, cultural openness, collaboration patterns, knowledge-sharing maturity, and change resistance.',
-    respondents: 'Team leads, managers, change agents, HR/People & Culture, knowledge management leads.',
+    name: 'People & Capability',
+    summary: 'Whether the organization has the right roles, skills, incentives, and knowledge-sharing to succeed at the target state.',
+    respondents: 'HR / People & Culture, capability & L&D leads, team leads, managers.',
     maturity: 0,
     subareas: [
       { id: 'sa_roles', name: 'Roles & Responsibilities', questions: [
         'How clear are your responsibilities and decision rights?',
         'Do you experience overlaps or gaps between roles?',
         'Are responsibilities documented and accessible to everyone?' ] },
+      { id: 'sa_talent', name: 'Talent & Capability', questions: [
+        'Does the organization have the skills and capabilities it needs for the target state?',
+        'How effective are hiring, upskilling, and career paths at closing capability gaps?',
+        'Where are the most critical skill shortages or single points of dependency?' ] },
       { id: 'sa_knowledge', name: 'Knowledge & Culture', questions: [
         'How is knowledge shared and retained in your team/organization?',
         'How open is the culture to experimentation and learning?',
         'Where do you see strengths and weaknesses in knowledge management?' ] },
-      { id: 'sa_change', name: 'Change Management', questions: [
-        'How is change communicated and implemented in the organization?',
-        'What helps you adapt to new processes, tools, or structures?',
-        'What challenges do you face during organizational changes?' ] }
+      { id: 'sa_performance', name: 'Performance & Rewards', questions: [
+        'How is individual and team performance measured and recognized?',
+        'How well do incentives and rewards reinforce the behaviours you want?',
+        'Where do current incentives drive unintended or counter-productive behaviour?' ] }
     ]
   },
   {
-    id: 'p_nextgen',
-    name: 'NextGen Organization',
-    summary: 'Adoption maturity, delivery quality & SLAs, and standardized ways of working across teams.',
-    respondents: 'Delivery leads, quality managers, operations leads, transformation office.',
+    id: 'p_change',
+    name: 'Customer, Change & Improvement',
+    summary: 'Whether the organization stays oriented to customer outcomes, adopts change effectively, and keeps improving.',
+    respondents: 'Change leads, customer/CX owners, transformation office, continuous-improvement leads.',
     maturity: 0,
     subareas: [
-      { id: 'sa_adoption', name: 'Adoption Metrics', questions: [
-        'How do you know if a new process, tool, or way of working is truly adopted?',
-        'Which recent changes have been adopted successfully, and why?',
-        'What makes adoption harder in your context?' ] },
-      { id: 'sa_quality', name: 'Delivery Quality & SLAs', questions: [
-        'How do you measure quality in delivery?',
-        'Are SLAs (Service Level Agreements) clear and met consistently?',
-        'Where do you see risks to delivery quality?' ] },
-      { id: 'sa_standard', name: 'Standardized Ways of Working', questions: [
-        'Are there standardized practices across teams? Which ones work well?',
-        'Where is standardization lacking or unhelpful?',
-        'How do you balance flexibility with consistency?' ] }
+      { id: 'sa_customer', name: 'Customer & Stakeholder Centricity', questions: [
+        'How is the voice of the customer or end-stakeholder captured and acted on?',
+        'How well does the organization focus on outcomes rather than outputs?',
+        'Where do internal priorities diverge from customer or stakeholder needs?' ] },
+      { id: 'sa_change', name: 'Change Management & Adoption', questions: [
+        'How is change communicated and implemented across the organization?',
+        'How do you know when a new way of working is genuinely adopted?',
+        'What makes adoption harder or easier in your context?' ] },
+      { id: 'sa_improve', name: 'Continuous Improvement & Innovation', questions: [
+        'How does the organization identify and act on opportunities to improve?',
+        'How safe is it to experiment, and how are lessons captured and reused?',
+        'Where does the organization innovate well, and where does it stall?' ] }
     ]
   }
 ];

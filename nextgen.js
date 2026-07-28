@@ -145,6 +145,8 @@
   // ══════════════════════════════════════════
   function renderOverview() {
     const j = J();
+    const inScopeLenses = (j.pillars || []).filter(p => p.active !== false).length;
+    const inScopeSubs = (j.pillars || []).reduce((n, p) => n + (p.active !== false ? (p.subareas || []).filter(s => s.active !== false).length : 0), 0);
     const counts = {
       pillars: (j.pillars || []).length,
       data: ['surveys','gemba','interviews','leadership'].reduce((n,k)=> n + ((j.data_collection||{})[k]||[]).length, 0),
@@ -180,7 +182,7 @@
       </div>
       <div class="tile-row">
         <div class="tile"><div class="tile-label">Journey Progress</div><div class="tile-value accent">${pct}%</div><div class="pbar" style="margin-top:8px"><div class="pbar-fill" style="width:${pct}%"></div></div></div>
-        <div class="tile"><div class="tile-label">Pillars</div><div class="tile-value">${counts.pillars}</div></div>
+        <div class="tile"><div class="tile-label">Assessment Scope</div><div class="tile-value">${inScopeLenses}<span style="font-size:14px;color:var(--text-muted)"> lenses</span></div><div class="tile-label" style="margin-top:5px">${inScopeSubs} sub-areas</div></div>
         <div class="tile"><div class="tile-label">Data Points</div><div class="tile-value teal">${counts.data}</div></div>
         <div class="tile"><div class="tile-label">AS-IS Findings</div><div class="tile-value gold">${counts.findings}</div></div>
         <div class="tile"><div class="tile-label">Champions</div><div class="tile-value green">${counts.champions}</div></div>
@@ -192,17 +194,38 @@
   // ══════════════════════════════════════════
   // 1 · PILLARS
   // ══════════════════════════════════════════
+  // A pillar/sub-area is in scope unless explicitly turned off (active === false),
+  // so journeys created before scoping existed default to fully in-scope.
+  function pActive(p) { return p.active !== false; }
+  function sInScope(p, s) { return pActive(p) && s.active !== false; }
+
   function renderPillars() {
     const j = J();
-    let cards = (j.pillars || []).map((p, i) => {
+    const pillars = j.pillars || [];
+    const lensesIn = pillars.filter(pActive).length;
+    const allSubs = pillars.reduce((n, p) => n + (p.subareas || []).length, 0);
+    const subsIn = pillars.reduce((n, p) => n + (p.subareas || []).filter(s => sInScope(p, s)).length, 0);
+
+    const scopeBar = `<div class="scope-bar">
+      <div class="scope-stat"><span class="sv accent">${lensesIn}<span style="font-size:13px;color:var(--text-muted)"> / ${pillars.length}</span></span><span class="sl">Lenses in scope</span></div>
+      <div class="scope-stat"><span class="sv teal">${subsIn}<span style="font-size:13px;color:var(--text-muted)"> / ${allSubs}</span></span><span class="sl">Sub-areas assessed</span></div>
+      <div class="spacer"></div>
+      <div class="item-meta" style="max-width:380px;text-align:right;line-height:1.5">Select the lenses and sub-areas to run for this client. Excluded items stay in the model — toggle them back any time.</div>
+    </div>`;
+
+    let cards = pillars.map((p, i) => {
       const open = expanded.has(p.id);
+      const on = pActive(p);
       const m = p.maturity || 0;
       const cls = m <= 1 ? 'low' : m <= 3 ? 'med' : 'high';
+      const inScopeSubs = (p.subareas || []).filter(s => s.active !== false).length;
       const subs = (p.subareas || []).map(s => {
         const qs = s.questions || [];
-        return `<div class="sub-block">
+        const sOn = s.active !== false;
+        return `<div class="sub-block ${sOn ? '' : 'out-scope'}">
           <div class="sub-hdr">
             <div class="sub-name">${esc(s.name)}</div>
+            <div class="sub-check ${sOn ? 'on' : ''}" title="Include this sub-area in the assessment" onclick="event.stopPropagation();NG.toggleSubarea('${p.id}','${s.id}')"><span class="box">${sOn ? '✓' : ''}</span>${sOn ? 'In scope' : 'Excluded'}</div>
             <span class="sub-count">${qs.length} question${qs.length!==1?'s':''}</span>
             <button class="icon-btn" title="Remove sub-area" onclick="NG.delSubarea('${p.id}','${s.id}')">🗑</button>
           </div>
@@ -215,13 +238,14 @@
           </div>
         </div>`;
       }).join('') || '<div class="sub-empty">No sub-areas yet — add the ones relevant to this client below.</div>';
-      return `<div class="item ${open?'expanded':''}">
-        <div class="item-hdr" onclick="NG.tExp('${p.id}')">
-          <div class="item-chevron">▶</div>
-          <div class="item-main">
+      return `<div class="item ${open?'expanded':''} ${on?'':'out-scope'}">
+        <div class="item-hdr">
+          <div class="item-chevron" onclick="NG.tExp('${p.id}')">▶</div>
+          <div class="item-main" onclick="NG.tExp('${p.id}')">
             <div class="item-name">${esc(p.name)}</div>
-            <div class="item-meta">${(p.subareas||[]).length} sub-areas · ${esc(p.respondents||'')}</div>
+            <div class="item-meta">${on ? `${inScopeSubs} of ${(p.subareas||[]).length} sub-areas in scope` : 'Not in this assessment'} · ${esc(p.respondents||'')}</div>
           </div>
+          <div class="scope-toggle ${on?'on':''}" title="Run this lens for this client" onclick="event.stopPropagation();NG.togglePillar('${p.id}')"><span class="dot"></span>${on?'In scope':'Excluded'}</div>
           <div class="mat-num ${cls}">${m}/5</div>
         </div>
         <div class="item-body">
@@ -247,7 +271,8 @@
         </div>
         <div class="field-row"><input class="inp" id="npName" placeholder="Pillar name (e.g., Customer Experience)"><input class="inp" id="npResp" placeholder="Who should respond (optional)"><button class="btn btn-primary btn-sm" onclick="NG.addPillar()">Add</button></div>
       </div>
-      ${cards || '<div class="empty">No pillars yet. The 4 NextGen pillars are seeded on new journeys — add one above or reset to default.</div>'}`;
+      ${scopeBar}
+      ${cards || '<div class="empty">No pillars yet. The NextGen 360° pillar model is seeded on new journeys — add one above or reset to default.</div>'}`;
   }
 
   // ══════════════════════════════════════════
@@ -947,7 +972,22 @@
       const n = document.getElementById('matn_'+id); if (n){ const m=p.maturity; n.textContent=m+'/5'; n.className='mat-num '+(m<=1?'low':m<=3?'med':'high'); } window.scheduleSave(); renderRail(); },
     setPillarNotes(id, v) { const p = J().pillars.find(p=>p.id===id); if(p){ p.notes=v; window.scheduleSave(); } },
     addPillar() { const name = val('npName'); if(!name){ window.showToast('Enter a pillar name','warning'); return; }
-      J().pillars.push({ id:uid('p'), name, respondents:val('npResp'), summary:'', maturity:0, subareas:[] }); commit(); render(); },
+      J().pillars.push({ id:uid('p'), name, respondents:val('npResp'), summary:'', maturity:0, active:true, subareas:[] }); commit(); render(); },
+
+    // ── scope selection (which pillars / sub-areas run for this client) ──
+    togglePillar(pid) {
+      const p = J().pillars.find(p => p.id === pid); if (!p) return;
+      p.active = p.active === false;   // false→true, true/undefined→false
+      commit(); render();
+    },
+    toggleSubarea(pid, sid) {
+      const p = J().pillars.find(p => p.id === pid); if (!p) return;
+      const s = (p.subareas || []).find(s => s.id === sid); if (!s) return;
+      s.active = s.active === false;
+      // Re-including a sub-area of an excluded lens brings the lens back into scope.
+      if (s.active && p.active === false) p.active = true;
+      commit(); render();
+    },
 
     // ── sub-areas (each client scopes their own) ──
     addSubarea(pid) {
@@ -990,7 +1030,7 @@
       (s.questions || []).splice(idx, 1);
       expanded.add(pid); commit(); render();
     },
-    resetPillars() { if(!confirm('Reset pillars to the default 4 NextGen pillars? Custom pillars and maturity notes will be replaced.')) return;
+    resetPillars() { if(!confirm('Reset to the default NextGen 360° pillar model? Custom pillars, sub-areas, and maturity notes will be replaced.')) return;
       window.api('GET','/default-pillars').then(def=>{ J().pillars = def; commit(); render(); window.showToast('Pillars reset','success'); }); },
 
     // data collection
